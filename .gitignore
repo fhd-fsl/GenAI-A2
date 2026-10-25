@@ -17,6 +17,7 @@ build/
 # Project-specific
 data/raw/
 data/processed/
+task1/data/tokenized/
 *.arrow
 dataset_dict.json
 split_manifest.json
