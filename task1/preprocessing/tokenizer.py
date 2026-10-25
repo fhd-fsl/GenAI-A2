@@ -13,7 +13,7 @@ from data.dataset_interface import TrialGPTDataset, SplitName
 
 # Constants
 MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
-MAX_SEQ_LEN = 4096
+MAX_SEQ_LEN = 2048
 SYSTEM_PROMPT = (
     "You are a clinical trial eligibility expert. Given a patient description, "
     "a criterion type (inclusion/exclusion), and the criterion text, determine "
