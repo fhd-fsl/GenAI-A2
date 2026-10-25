@@ -1,0 +1,16 @@
+[project]
+name = "genai-a2"
+version = "0.1.0"
+description = "GenAI Assignment 2 — Clinical Trial Eligibility Screening"
+readme = "README.md"
+authors = [
+    { name = "Fahad", email = "fahadfaisalnawaz1000@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "datasets>=5.1.0",
+    "huggingface-hub>=2.3.0",
+]
+
+# No [build-system] or [project.scripts] — this is a script project, not a package
+# uv will install dependencies into .venv without trying to build genai-a2
