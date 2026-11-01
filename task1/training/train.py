@@ -28,11 +28,10 @@ from task1.preprocessing.tokenizer import load_tokenized_splits
 
 @dataclass
 class TrainConfig:
-    """Training configuration loaded from YAML."""
-    model_name: str
-    max_seq_len: int
-    lora: dict
+    """Training configuration loaded from YAML (matches nested YAML structure)."""
+    model: dict
     quantization: dict
+    lora: dict
     training: dict
     data: dict
     system_prompt: str
@@ -58,11 +57,11 @@ def setup_model_and_tokenizer(config: TrainConfig):
 
     # Load base model
     model = AutoModelForCausalLM.from_pretrained(
-        config.model_name,
+        config.model["name"],
         quantization_config=bnb_config,
         device_map={"": 0},
         torch_dtype=torch.float16,
-        trust_remote_code=config.trust_remote_code,
+        trust_remote_code=config.model["trust_remote_code"],
     )
 
     print(f"Model device: {next(model.parameters()).device}")
@@ -85,7 +84,7 @@ def setup_model_and_tokenizer(config: TrainConfig):
     model.print_trainable_parameters()
 
     # Tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(config.model["name"], use_fast=True)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 

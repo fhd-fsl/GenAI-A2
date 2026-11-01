@@ -9,6 +9,9 @@ from datasets import Dataset, DatasetDict
 from datasets import load_from_disk
 from transformers import AutoTokenizer
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from data.dataset_interface import TrialGPTDataset, SplitName
 
 # Constants
