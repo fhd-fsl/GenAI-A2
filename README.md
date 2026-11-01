@@ -131,13 +131,17 @@ All hyperparameters in `task1/training/config.yaml`:
 ### Results (Test Set)
 | Metric | Value |
 |--------|-------|
-| Accuracy | 0.6782 |
-| Macro F1 | 0.4701 |
-| Evidence F1 (micro) | 0.4996 |
+| **Accuracy** | **0.7330** |
+| **Macro F1** | **0.4501** |
+| **Evidence F1 (micro)** | **0.5871** |
+| Inclusion Accuracy | 0.7333 |
+| Exclusion Accuracy | 0.7328 |
 | Trainable params | ~239M (7.2%) |
 | Adapter size | 0.48 GB |
 
-**Adapter Download**: [Google Drive](https://drive.google.com/drive/folders/1JbYf3-faVgsE7ZahMq0m1lmHrw4zG1jZ?usp=sharing) (folder contains `adapter_model.safetensors`, `adapter_config.json`, tokenizer files, `test_predictions.json`)
+**Adapter Download**: [Google Drive](https://drive.google.com/drive/folders/1YEafpplZJwsxZx9rfEQxkuEPuCg8xUrp?usp=sharing) (folder contains `adapter_model.safetensors`, `adapter_config.json`, tokenizer files, `test_predictions.json`)
+
+**Training Note**: Validation loss increased across 3 epochs (1.31 → 1.77), indicating overfitting on small dataset (37 patients, 603 annotations). Best validation loss at epoch 1.
 
 Full metrics in `task1/outputs/eval/README.md` and `test_predictions.json`.
 
