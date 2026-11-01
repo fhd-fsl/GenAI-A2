@@ -8,10 +8,16 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "accelerate>=1.15.0",
+    "bitsandbytes>=0.50.2",
     "datasets>=5.1.0",
     "huggingface-hub>=2.3.0",
     "jinja2>=3.1.6",
+    "peft>=0.21.2",
+    "scikit-learn>=1.9.1",
+    "torch>=2.7.1",
     "transformers>=5.20.2",
+    "trl>=1.16.0",
 ]
 
 # No [build-system] or [project.scripts] — this is a script project, not a package

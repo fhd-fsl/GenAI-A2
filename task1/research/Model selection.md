@@ -128,17 +128,21 @@ Criterion text: [single criterion sentence]
 
 ---
 
+## Hardware Constraints & Model Selection Adjustment
+
+> **Note on model choice**: Initial target was **Qwen3-4B-Instruct** (Apache 2.0, 4.02B params). During local development on **RTX 4050 Laptop (6 GB VRAM)**, the 4-bit NF4 quantized model + QLoRA (r=128) training exceeded available memory (OOM) even with gradient checkpointing, batch=1, grad_accum=16, and seq_len=2048.  
+> **Fallback**: Switched to **Qwen2.5-3B-Instruct** (3.21B params, same tokenizer family, Apache 2.0) which fits comfortably at ~3.8 GB peak VRAM during QLoRA training.  
+> **Training speed** on local 6 GB GPU was prohibitively slow (~5 hr/epoch); training was moved to **Google Colab T4 (16 GB)** where 3 epochs completed in ~41 min. The 3B model remains well-justified per literature (Sources 4, 5) showing sub-7B Qwen/Llama models reach specialized 7B medical performance with fine-tuning.
+
 ## Summary
 
 | Decision | Choice |
 |----------|--------|
-| **Target model** | `Qwen/Qwen3-4B-Instruct` |
+| **Target model** | `Qwen/Qwen2.5-3B-Instruct` (fallback from Qwen3-4B due to 6 GB VRAM OOM) |
 | **Quantization (inference)** | Q4_K_M |
 | **Fine-tuning method** | **QLoRA (4-bit NF4, r=128, α=256)** |
-| **Tokenizer** | Qwen3 BPE (151K vocab) |
-| **Max sequence length** | 4096 (patient truncation from end, logged) |
-| **Output schema** | Structured JSON with 4-class label + evidence sentence IDs + explanation |
-| **Expected inference VRAM** | ~2.7 GB @ 6K ctx |
-| **Expected QLoRA train VRAM** | ~3.8–4.2 GB @ 4K ctx, grad_accum=16 |
-
-All choices are **reproducible on a single RTX 4050 6 GB** with open-source tooling (Unsloth, PEFT, Hugging Face Transformers, bitsandbytes).
+| **Tokenizer** | Qwen2.5 BPE (151K vocab) |
+| **Max sequence length** | 2048 (max observed tokenized length 1077; headroom for generation) |
+| **Output schema** | Structured JSON with 6-class label + evidence sentence IDs + explanation |
+| **Expected inference VRAM** | ~2.3 GB @ 6K ctx |
+| **Expected QLoRA train VRAM** | ~3.8 GB @ 2K ctx, grad_accum=16 (fits 6 GB with headroom) |
