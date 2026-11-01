@@ -65,7 +65,26 @@ GenAI A2/
 │   ├── research/
 │   │   ├── Literature review.md
 │   │   └── Model selection.md
-│   └── train.py                # QLoRA fine-tuning (TODO)
+│   ├── preprocessing/
+│   │   └── tokenizer.py        # Tokenization & data prep (used by train.py)
+│   ├── training/
+│   │   ├── __init__.py
+│   │   ├── config.yaml         # All hyperparameters (single source of truth)
+│   │   ├── requirements.txt    # Exact Colab environment
+│   │   ├── train.py            # QLoRA fine-tuning (reproducible)
+│   │   └── fine_tune.ipynb     # Original Colab notebook
+│   ├── eval/
+│   │   ├── __init__.py
+│   │   ├── metrics.py          # Shared metrics (classification + evidence)
+│   │   └── eval.py             # Evaluation script
+│   └── outputs/
+│       ├── adapter/            # LoRA adapter (configs tracked, weights on HF Hub)
+│       ├── train/              # Training artifacts
+│       │   ├── split_manifest.json
+│       │   └── training_log.json
+│       └── eval/               # Evaluation results
+│           ├── README.md       # Results summary
+│           └── test_predictions.json
 ├── task2/                      # Eligibility + evidence (TODO)
 ├── task3/                      # KV cache benchmarks (TODO)
 ├── task4/                      # Tiled attention (TODO)
@@ -75,6 +94,50 @@ GenAI A2/
 ├── uv.lock
 └── .gitignore
 ```
+
+## Task 1: QLoRA Fine-tuning & Evaluation
+
+### Reproducible Training
+```bash
+# 1. Install environment (from Colab)
+pip install -r task1/training/requirements.txt
+
+# 2. Prepare tokenized data (uses task1/preprocessing/tokenizer.py)
+uv run python task1/preprocessing/tokenizer.py
+
+# 3. Train (reads config from task1/training/config.yaml)
+uv run python task1/training/train.py
+```
+Outputs: `task1/outputs/adapter/adapter_model.safetensors`, `adapter_config.json`, `training_log.json` in `task1/outputs/train/`
+
+### Evaluation
+```bash
+# Evaluate on test set (requires adapter from training or HF Hub)
+uv run python task1/eval/eval.py \
+  --adapter-path task1/outputs/adapter \
+  --split test \
+  --output-dir results/task1/eval
+```
+Outputs: `test_predictions.json`, `test_metrics.json` with accuracy, macro-F1, per-class P/R/F1, confusion matrix, evidence micro-F1.
+
+### Configuration
+All hyperparameters in `task1/training/config.yaml`:
+- **Model**: Qwen2.5-3B-Instruct, 2048 seq len
+- **QLoRA**: 4-bit NF4, r=128, alpha=256, dropout=0.05
+- **Target modules**: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
+- **Training**: 3 epochs, batch=1, grad_accum=16, LR=5e-5, cosine, warmup=50
+- **Data**: Patient-grouped 37/8/8 split (seed 42), 6 eligibility labels preserved
+
+### Results (Test Set)
+| Metric | Value |
+|--------|-------|
+| Accuracy | 0.6782 |
+| Macro F1 | 0.4701 |
+| Evidence F1 (micro) | 0.4996 |
+| Trainable params | ~239M (7.2%) |
+| Adapter size | 0.48 GB |
+
+Full metrics in `task1/outputs/eval/README.md` and `test_predictions.json`.
 
 ## Key Design Decisions
 
