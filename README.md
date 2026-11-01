@@ -78,7 +78,7 @@ GenAI A2/
 │   │   ├── metrics.py          # Shared metrics (classification + evidence)
 │   │   └── eval.py             # Evaluation script
 │   └── outputs/
-│       ├── adapter/            # LoRA adapter (configs tracked, weights on HF Hub)
+│       ├── adapter/            # LoRA adapter (configs tracked, weights on Google Drive)
 │       ├── train/              # Training artifacts
 │       │   ├── split_manifest.json
 │       │   └── training_log.json
@@ -136,6 +136,8 @@ All hyperparameters in `task1/training/config.yaml`:
 | Evidence F1 (micro) | 0.4996 |
 | Trainable params | ~239M (7.2%) |
 | Adapter size | 0.48 GB |
+
+**Adapter Download**: [Google Drive](https://drive.google.com/drive/folders/1JbYf3-faVgsE7ZahMq0m1lmHrw4zG1jZ?usp=sharing) (folder contains `adapter_model.safetensors`, `adapter_config.json`, tokenizer files, `test_predictions.json`)
 
 Full metrics in `task1/outputs/eval/README.md` and `test_predictions.json`.
 
