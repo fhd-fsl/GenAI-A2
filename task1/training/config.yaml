@@ -1,0 +1,84 @@
+# QLoRA Fine-tuning Configuration for TrialGPT Criterion-Level Eligibility
+# Task 1: Fine-tune Qwen2.5-3B-Instruct on TrialGPT Criterion Annotations
+
+model:
+  name: "Qwen/Qwen2.5-3B-Instruct"
+  max_seq_len: 2048
+  trust_remote_code: true
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: "float16"
+
+lora:
+  r: 128
+  lora_alpha: 256
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+training:
+  output_dir: "results/task1/checkpoints"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 5e-5
+  weight_decay: 0.1
+  warmup_steps: 50
+  lr_scheduler_type: "cosine"
+  logging_steps: 10
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+  greater_is_better: false
+  save_total_limit: 2
+  fp16: true
+  bf16: false
+  gradient_checkpointing: true
+  gradient_checkpointing_kwargs:
+    use_reentrant: false
+  optim: "paged_adamw_8bit"
+  report_to: "none"
+  remove_unused_columns: false
+  dataloader_pin_memory: true
+  max_grad_norm: 1.0
+  seed: 42
+  early_stopping_patience: 1
+
+data:
+  dataset_name: "ncbi/TrialGPT-Criterion-Annotations"
+  split_seed: 42
+  n_train_patients: 37
+  n_val_patients: 8
+  n_test_patients: 8
+  keep_columns:
+    - "annotation_id"
+    - "patient_id"
+    - "note"
+    - "trial_id"
+    - "criterion_type"
+    - "criterion_text"
+    - "expert_eligibility"
+    - "expert_sentences"
+
+system_prompt: "You are a clinical trial eligibility expert. Given a patient description, a criterion type (inclusion/exclusion), and the criterion text, determine the patient's eligibility for that criterion. Return a JSON object with: prediction (one of: included, not included, not excluded, excluded, not enough information, not applicable), evidence_sentence_ids (list of sentence indices from the patient note that support your decision), evidence_text (the corresponding sentence texts), and explanation (your reasoning based only on the provided information)."
+
+eligibility_labels:
+  - "included"
+  - "not included"
+  - "not excluded"
+  - "excluded"
+  - "not enough information"
+  - "not applicable"

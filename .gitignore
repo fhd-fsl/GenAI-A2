@@ -20,7 +20,6 @@ data/processed/
 task1/data/tokenized/
 *.arrow
 dataset_dict.json
-split_manifest.json
 state.json
 dataset_info.json
 
@@ -38,10 +37,15 @@ adapters/
 *.log
 wandb/
 runs/
-outputs/
 results/
 *.csv
 *.jsonl
+
+# Ignore large model files in task1/outputs/
+task1/outputs/adapter/adapter_model.safetensors
+task1/outputs/adapter/tokenizer.json
+task1/outputs/adapter/*.bin
+task1/outputs/adapter/checkpoint-*/
 
 # IDE / OS
 .vscode/
