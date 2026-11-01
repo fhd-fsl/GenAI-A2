@@ -1,29 +1,37 @@
 {
-  "train_runtime": 1488.5817,
-  "train_samples_per_second": 0.81,
-  "train_steps_per_second": 0.051,
-  "total_flos": 8565307101954048.0,
-  "train_loss": 0.7544479840680173,
-  "epoch": 2.0,
-  "early_stopped": true,
-  "early_stopping_patience": 1,
-  "epochs_completed": 2,
+  "train_runtime": 2476.3819,
+  "train_samples_per_second": 0.731,
+  "train_steps_per_second": 0.092,
+  "total_flos": 12847960652931072,
+  "train_loss": 0.2651992719947246,
+  "epoch": 3.0,
+  "early_stopped": false,
+  "epochs_completed": 3,
   "epoch_metrics": [
     {
       "epoch": 1,
-      "train_loss": 0.780156,
-      "eval_loss": 0.869631,
-      "learning_rate": 5e-5
+      "train_loss": 0.207110,
+      "eval_loss": 1.306291,
+      "eval_perplexity": 3.692
     },
     {
       "epoch": 2,
-      "train_loss": 0.202977,
-      "eval_loss": 1.528243,
-      "learning_rate": 5e-5
+      "train_loss": 0.127134,
+      "eval_loss": 1.603168,
+      "eval_perplexity": 4.969
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.074713,
+      "eval_loss": 1.772837,
+      "eval_perplexity": 5.887
     }
   ],
   "best_model_epoch": 1,
-  "best_eval_loss": 0.869631,
+  "best_eval_loss": 1.306291,
+  "overfitting_note": "Train loss decreases monotonically (0.207 -> 0.075) while validation loss increases (1.31 -> 1.77), indicating overfitting on small dataset (37 patients, 603 annotations). Consider: fewer epochs, higher dropout, more regularization, or early stopping at epoch 1.",
+  "hardware": "Google Colab T4 (16 GB)",
+  "training_time_minutes": 41.3,
   "training_config": {
     "num_train_epochs": 3,
     "per_device_train_batch_size": 1,

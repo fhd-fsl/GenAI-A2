@@ -1,38 +1,56 @@
+# Task 1 Evaluation Results (Fine-tuned Model)
 
-# TrialGPT QLoRA Adapter
+## Test Set Metrics (206 annotations, 8 patients)
 
-## Model
-- Base: Qwen/Qwen2.5-3B-Instruct
-- Method: QLoRA (4-bit NF4, r=128, alpha=256)
-- Target modules: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
-- Trainable params: ~239M (7.2%)
+### Classification
+| Metric | Value |
+|--------|-------|
+| **Accuracy** | **0.7330** |
+| **Macro F1** | **0.4501** |
 
-## Data
-- Dataset: ncbi/TrialGPT-Criterion-Annotations
-- Split: 37 train / 8 val / 8 test (patient-grouped, seed 42)
-- Train: 603 annotations, 37 patients
-- Val: 206 annotations, 8 patients
-- Test: 206 annotations, 8 patients
+### Per-Class Precision / Recall / F1
+| Label | Precision | Recall | F1 | Support |
+|-------|-----------|--------|-----|---------|
+| included | 0.947 | 0.667 | 0.783 | 27 |
+| not included | 0.000 | 0.000 | 0.000 | 7 |
+| not excluded | 0.736 | 0.978 | 0.840 | 91 |
+| excluded | 0.000 | 0.000 | 0.000 | 0 |
+| not enough information | 0.661 | 0.591 | 0.624 | 66 |
+| not applicable | 0.714 | 0.333 | 0.455 | 15 |
 
-## Training
-- Epochs: 3
-- Batch size: 1 (grad_accum=8, effective=8)
-- LR: 2e-4, cosine, warmup=50 steps
-- Seq length: 2048
-- Optimizer: paged_adamw_8bit
-- Gradient checkpointing: enabled
+### Confusion Matrix
+Rows = gold, Cols = pred | incl | not-incl | not-excl | excl | not-enough | not-appl
+|---|---|---|---|---|---|---|
+| **included** | 18 | 0 | 0 | 0 | 9 | 0 |
+| **not included** | 0 | 0 | 0 | 0 | 7 | 0 |
+| **not excluded** | 0 | 0 | 89 | 0 | 1 | 1 |
+| **excluded** | 0 | 0 | 0 | 0 | 0 | 0 |
+| **not enough info** | 1 | 0 | 25 | 0 | 39 | 1 |
+| **not applicable** | 0 | 0 | 7 | 0 | 3 | 5 |
 
-## Results (Test Set)
-- Accuracy: 0.6782
-- Macro F1: 0.4701
-- Evidence F1 (micro): 0.4996
+### Evidence Retrieval (Micro)
+| Metric | Value |
+|--------|-------|
+| **Precision** | **0.5514** |
+| **Recall** | **0.6277** |
+| **F1** | **0.5871** |
 
-## Usage
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
+### Evidence F1 per Class
+| Label | F1 |
+|-------|-----|
+| included | 0.831 |
+| not included | 0.400 |
+| not excluded | 0.596 |
+| excluded | 0.000 |
+| not enough information | 0.313 |
+| not applicable | 0.500 |
 
-base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-3B-Instruct", torch_dtype=torch.float16, device_map="auto")
-model = PeftModel.from_pretrained(base, "./adapter")
-tokenizer = AutoTokenizer.from_pretrained("./adapter")
-```
+### Inclusion vs Exclusion Breakdown
+| Split | Accuracy | Macro F1 |
+|-------|----------|----------|
+| Inclusion | 0.7333 | 0.2616 |
+| Exclusion | 0.7328 | 0.2492 |
+
+---
+
+**Generated from**: `task1/colab/submission-package/adapter/test_metrics_detailed.json`
