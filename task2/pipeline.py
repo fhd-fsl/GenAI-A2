@@ -72,6 +72,12 @@ class EligibilityPipeline:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "left"
 
+        # Ensure chat template is set (Qwen2.5 chat template)
+        if self.tokenizer.chat_template is None:
+            # Load from base model tokenizer which has the template
+            base_tokenizer = AutoTokenizer.from_pretrained(self.base_model, use_fast=True)
+            self.tokenizer.chat_template = base_tokenizer.chat_template
+
     def predict(
         self,
         note: str,
