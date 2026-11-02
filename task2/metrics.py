@@ -96,28 +96,54 @@ def compute_classification_metrics(
 
 def compute_evidence_metrics(predictions: list[dict]) -> dict[str, Any]:
     """
-    Compute evidence retrieval metrics (micro-averaged and per-class).
+    Compute evidence retrieval metrics (macro-averaged per-instance and micro-averaged pooled).
 
-    Returns micro P/R/F1 and per-class evidence F1.
+    Returns macro and micro P/R/F1 and per-class evidence F1.
     """
     all_prec = []
     all_rec = []
     all_f1 = []
     class_f1 = defaultdict(list)
 
+    total_tp = 0
+    total_fp = 0
+    total_fn = 0
+
     for p in predictions:
-        gold_ev = p.get("gold_evidence", [])
-        pred_ev = p.get("evidence_sentence_ids", [])
-        prec, rec, f1 = evidence_f1(gold_ev, pred_ev)
+        gold_ev = set(p.get("gold_evidence", []))
+        pred_ev = set(p.get("evidence_sentence_ids", []))
+        prec, rec, f1 = evidence_f1(list(gold_ev), list(pred_ev))
         all_prec.append(prec)
         all_rec.append(rec)
         all_f1.append(f1)
         class_f1[p.get("gold_label", "unknown")].append(f1)
 
+        total_tp += len(gold_ev & pred_ev)
+        total_fp += len(pred_ev - gold_ev)
+        total_fn += len(gold_ev - pred_ev)
+
+    micro_prec = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0.0
+    micro_rec = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
+    micro_f1 = 2 * micro_prec * micro_rec / (micro_prec + micro_rec) if (micro_prec + micro_rec) > 0 else 0.0
+
+    macro_prec = float(np.mean(all_prec)) if all_prec else 0.0
+    macro_rec = float(np.mean(all_rec)) if all_rec else 0.0
+    macro_f1 = float(np.mean(all_f1)) if all_f1 else 0.0
+
     metrics = {
-        "evidence_precision_micro": float(np.mean(all_prec)) if all_prec else 0.0,
-        "evidence_recall_micro": float(np.mean(all_rec)) if all_rec else 0.0,
-        "evidence_f1_micro": float(np.mean(all_f1)) if all_f1 else 0.0,
+        # Instance-averaged (macro across test queries)
+        "evidence_precision_macro": macro_prec,
+        "evidence_recall_macro": macro_rec,
+        "evidence_f1_macro": macro_f1,
+        # Pooled sentence token level (micro across all citations)
+        "evidence_precision_micro": float(micro_prec),
+        "evidence_recall_micro": float(micro_rec),
+        "evidence_f1_micro": float(micro_f1),
+        "evidence_counts": {
+            "tp": total_tp,
+            "fp": total_fp,
+            "fn": total_fn,
+        },
         "per_class_evidence_f1": {
             label: float(np.mean(f1s)) if f1s else 0.0
             for label, f1s in class_f1.items()
@@ -188,13 +214,15 @@ def print_metrics(metrics: dict[str, Any]) -> None:
             print(f"{labels[i][:4]}: " + "  ".join(f"{x:3d}" for x in row))
     print()
 
-    print("Evidence Retrieval (micro):")
-    print(f"  Precision: {metrics.get('evidence_precision_micro', 0):.4f}")
-    print(f"  Recall:    {metrics.get('evidence_recall_micro', 0):.4f}")
-    print(f"  F1:        {metrics.get('evidence_f1_micro', 0):.4f}")
+    print("Evidence Retrieval:")
+    print(f"  Macro (per-instance mean): P={metrics.get('evidence_precision_macro', 0):.4f} R={metrics.get('evidence_recall_macro', 0):.4f} F1={metrics.get('evidence_f1_macro', 0):.4f}")
+    print(f"  Micro (pooled sentences):  P={metrics.get('evidence_precision_micro', 0):.4f} R={metrics.get('evidence_recall_micro', 0):.4f} F1={metrics.get('evidence_f1_micro', 0):.4f}")
+    if "evidence_counts" in metrics:
+        cnts = metrics["evidence_counts"]
+        print(f"    (Counts: TP={cnts['tp']}, FP={cnts['fp']}, FN={cnts['fn']})")
     print()
 
-    print("Per-class Evidence F1:")
+    print("Per-class Evidence F1 (macro):")
     for label, f1 in metrics.get("per_class_evidence_f1", {}).items():
         print(f"  {label}: F1={f1:.4f}")
     print()
@@ -207,6 +235,7 @@ def print_metrics(metrics: dict[str, Any]) -> None:
             split_metrics = ie.get(split, {})
             print(f"\n{split.capitalize()} (n={split_metrics.get('n_samples', 0)}):")
             if split_metrics.get('n_samples', 0) > 0:
-                print(f"  Accuracy: {split_metrics.get('accuracy', 0):.4f}")
-                print(f"  Macro F1: {split_metrics.get('macro_f1', 0):.4f}")
-                print(f"  Evidence F1: {split_metrics.get('evidence_f1_micro', 0):.4f}")
+                print(f"  Accuracy:    {split_metrics.get('accuracy', 0):.4f}")
+                print(f"  Macro F1:    {split_metrics.get('macro_f1', 0):.4f}")
+                print(f"  Evidence F1 (macro): {split_metrics.get('evidence_f1_macro', 0):.4f}")
+                print(f"  Evidence F1 (micro): {split_metrics.get('evidence_f1_micro', 0):.4f}")

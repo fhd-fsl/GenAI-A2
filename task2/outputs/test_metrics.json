@@ -1,0 +1,367 @@
+{
+  "n_total": 206,
+  "n_valid": 206,
+  "accuracy": 0.7330097087378641,
+  "macro_f1": 0.5401553583414125,
+  "per_class": {
+    "included": {
+      "precision": 0.9473684210526315,
+      "recall": 0.6666666666666666,
+      "f1": 0.782608695652174,
+      "support": 27
+    },
+    "not included": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 7
+    },
+    "not excluded": {
+      "precision": 0.7355371900826446,
+      "recall": 0.978021978021978,
+      "f1": 0.839622641509434,
+      "support": 91
+    },
+    "excluded": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "not enough information": {
+      "precision": 0.6610169491525424,
+      "recall": 0.5909090909090909,
+      "f1": 0.624,
+      "support": 66
+    },
+    "not applicable": {
+      "precision": 0.7142857142857143,
+      "recall": 0.3333333333333333,
+      "f1": 0.45454545454545453,
+      "support": 15
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "included",
+      "not included",
+      "not excluded",
+      "excluded",
+      "not enough information",
+      "not applicable"
+    ],
+    "matrix": [
+      [
+        18,
+        0,
+        0,
+        0,
+        9,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        7,
+        0
+      ],
+      [
+        0,
+        0,
+        89,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        25,
+        0,
+        39,
+        1
+      ],
+      [
+        0,
+        0,
+        7,
+        0,
+        3,
+        5
+      ]
+    ]
+  },
+  "evidence_precision_macro": 0.8318770226537218,
+  "evidence_recall_macro": 0.8359223300970873,
+  "evidence_f1_macro": 0.8260055478502081,
+  "evidence_precision_micro": 0.5471698113207547,
+  "evidence_recall_micro": 0.6170212765957447,
+  "evidence_f1_micro": 0.58,
+  "evidence_counts": {
+    "tp": 58,
+    "fp": 48,
+    "fn": 36
+  },
+  "per_class_evidence_f1": {
+    "included": 0.8527336860670195,
+    "not included": 0.6666666666666667,
+    "not applicable": 0.8333333333333334,
+    "not excluded": 0.9054945054945056,
+    "not enough information": 0.7207070707070706
+  },
+  "inclusion_exclusion": {
+    "inclusion": {
+      "n_total": 75,
+      "n_valid": 75,
+      "accuracy": 0.7333333333333333,
+      "macro_f1": 0.39246068455134137,
+      "per_class": {
+        "included": {
+          "precision": 0.9473684210526315,
+          "recall": 0.6666666666666666,
+          "f1": 0.782608695652174,
+          "support": 27
+        },
+        "not included": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7
+        },
+        "not excluded": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "excluded": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "not enough information": {
+          "precision": 0.6607142857142857,
+          "recall": 0.9736842105263158,
+          "f1": 0.7872340425531915,
+          "support": 38
+        },
+        "not applicable": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "included",
+          "not included",
+          "not excluded",
+          "excluded",
+          "not enough information",
+          "not applicable"
+        ],
+        "matrix": [
+          [
+            18,
+            0,
+            0,
+            0,
+            9,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            7,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            37,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            3,
+            0
+          ]
+        ]
+      },
+      "evidence_precision_macro": 0.7071111111111111,
+      "evidence_recall_macro": 0.7193333333333334,
+      "evidence_f1_macro": 0.6967619047619048,
+      "evidence_precision_micro": 0.5584415584415584,
+      "evidence_recall_micro": 0.6935483870967742,
+      "evidence_f1_micro": 0.6187050359712231,
+      "evidence_counts": {
+        "tp": 43,
+        "fp": 34,
+        "fn": 19
+      },
+      "per_class_evidence_f1": {
+        "included": 0.8527336860670195,
+        "not included": 0.6666666666666667,
+        "not enough information": 0.5675438596491229,
+        "not applicable": 1.0
+      },
+      "n_samples": 75
+    },
+    "exclusion": {
+      "n_total": 131,
+      "n_valid": 131,
+      "accuracy": 0.732824427480916,
+      "macro_f1": 0.49832356301587816,
+      "per_class": {
+        "included": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "not included": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "not excluded": {
+          "precision": 0.7355371900826446,
+          "recall": 0.978021978021978,
+          "f1": 0.839622641509434,
+          "support": 91
+        },
+        "excluded": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "not enough information": {
+          "precision": 0.6666666666666666,
+          "recall": 0.07142857142857142,
+          "f1": 0.12903225806451613,
+          "support": 28
+        },
+        "not applicable": {
+          "precision": 0.7142857142857143,
+          "recall": 0.4166666666666667,
+          "f1": 0.5263157894736842,
+          "support": 12
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "included",
+          "not included",
+          "not excluded",
+          "excluded",
+          "not enough information",
+          "not applicable"
+        ],
+        "matrix": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            89,
+            0,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            25,
+            0,
+            2,
+            1
+          ],
+          [
+            0,
+            0,
+            7,
+            0,
+            0,
+            5
+          ]
+        ]
+      },
+      "evidence_precision_macro": 0.9033078880407124,
+      "evidence_recall_macro": 0.9026717557251909,
+      "evidence_f1_macro": 0.9,
+      "evidence_precision_micro": 0.5172413793103449,
+      "evidence_recall_micro": 0.46875,
+      "evidence_f1_micro": 0.4918032786885246,
+      "evidence_counts": {
+        "tp": 15,
+        "fp": 14,
+        "fn": 17
+      },
+      "per_class_evidence_f1": {
+        "not applicable": 0.7916666666666666,
+        "not excluded": 0.9054945054945056,
+        "not enough information": 0.9285714285714286
+      },
+      "n_samples": 131
+    }
+  }
+}
