@@ -70,6 +70,7 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!task2/task2_eval.ipynb
 
 # Temporary
 tmp/
