@@ -1,0 +1,263 @@
+{
+  "metadata": {
+    "model": "Qwen/Qwen2.5-3B-Instruct (4-bit NF4 + LoRA)",
+    "adapter_path": "task1/outputs/adapter",
+    "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "repetitions": 2,
+    "timestamp": "2026-11-05 23:01:03"
+  },
+  "grid": [
+    {
+      "prompt_name": "short",
+      "prompt_length": 54,
+      "gen_length": 32,
+      "uncached": {
+        "prefill_ms": 189.05,
+        "decode_ms": 4514.59,
+        "ms_per_token": 145.63,
+        "total_ms": 4720.42,
+        "tokens_per_sec": 6.78,
+        "peak_mem_mb": 3656.15
+      },
+      "cached": {
+        "prefill_ms": 158.03,
+        "decode_ms": 4599.49,
+        "ms_per_token": 148.37,
+        "total_ms": 4778.9,
+        "tokens_per_sec": 6.72,
+        "peak_mem_mb": 3630.36,
+        "kv_cache_mb": 2.988
+      },
+      "comparison": {
+        "e2e_speedup": 0.99,
+        "decode_speedup": 0.98,
+        "throughput_gain_pct": -0.9,
+        "memory_delta_mb": -25.79
+      }
+    },
+    {
+      "prompt_name": "short",
+      "prompt_length": 54,
+      "gen_length": 64,
+      "uncached": {
+        "prefill_ms": 182.7,
+        "decode_ms": 9646.16,
+        "ms_per_token": 153.11,
+        "total_ms": 9863.76,
+        "tokens_per_sec": 6.49,
+        "peak_mem_mb": 3683.64
+      },
+      "cached": {
+        "prefill_ms": 171.15,
+        "decode_ms": 8650.3,
+        "ms_per_token": 137.31,
+        "total_ms": 8854.54,
+        "tokens_per_sec": 7.24,
+        "peak_mem_mb": 3630.36,
+        "kv_cache_mb": 4.113
+      },
+      "comparison": {
+        "e2e_speedup": 1.11,
+        "decode_speedup": 1.12,
+        "throughput_gain_pct": 11.5,
+        "memory_delta_mb": -53.28
+      }
+    },
+    {
+      "prompt_name": "short",
+      "prompt_length": 54,
+      "gen_length": 128,
+      "uncached": {
+        "prefill_ms": 106.18,
+        "decode_ms": 21784.45,
+        "ms_per_token": 171.53,
+        "total_ms": 21967.34,
+        "tokens_per_sec": 5.83,
+        "peak_mem_mb": 3739.25
+      },
+      "cached": {
+        "prefill_ms": 208.41,
+        "decode_ms": 18670.61,
+        "ms_per_token": 147.01,
+        "total_ms": 18951.83,
+        "tokens_per_sec": 6.76,
+        "peak_mem_mb": 3630.36,
+        "kv_cache_mb": 6.363
+      },
+      "comparison": {
+        "e2e_speedup": 1.16,
+        "decode_speedup": 1.17,
+        "throughput_gain_pct": 16.0,
+        "memory_delta_mb": -108.89
+      }
+    },
+    {
+      "prompt_name": "medium",
+      "prompt_length": 149,
+      "gen_length": 32,
+      "uncached": {
+        "prefill_ms": 184.02,
+        "decode_ms": 5859.74,
+        "ms_per_token": 189.02,
+        "total_ms": 6061.86,
+        "tokens_per_sec": 5.28,
+        "peak_mem_mb": 3738.38
+      },
+      "cached": {
+        "prefill_ms": 181.87,
+        "decode_ms": 4242.9,
+        "ms_per_token": 136.87,
+        "total_ms": 4442.49,
+        "tokens_per_sec": 7.21,
+        "peak_mem_mb": 3716.79,
+        "kv_cache_mb": 6.328
+      },
+      "comparison": {
+        "e2e_speedup": 1.36,
+        "decode_speedup": 1.38,
+        "throughput_gain_pct": 36.6,
+        "memory_delta_mb": -21.59
+      }
+    },
+    {
+      "prompt_name": "medium",
+      "prompt_length": 149,
+      "gen_length": 64,
+      "uncached": {
+        "prefill_ms": 184.46,
+        "decode_ms": 12107.5,
+        "ms_per_token": 192.18,
+        "total_ms": 12327.9,
+        "tokens_per_sec": 5.19,
+        "peak_mem_mb": 3766.33
+      },
+      "cached": {
+        "prefill_ms": 214.32,
+        "decode_ms": 8347.01,
+        "ms_per_token": 132.49,
+        "total_ms": 8593.35,
+        "tokens_per_sec": 7.46,
+        "peak_mem_mb": 3716.79,
+        "kv_cache_mb": 7.453
+      },
+      "comparison": {
+        "e2e_speedup": 1.43,
+        "decode_speedup": 1.45,
+        "throughput_gain_pct": 43.5,
+        "memory_delta_mb": -49.54
+      }
+    },
+    {
+      "prompt_name": "medium",
+      "prompt_length": 149,
+      "gen_length": 128,
+      "uncached": {
+        "prefill_ms": 184.32,
+        "decode_ms": 27921.75,
+        "ms_per_token": 219.86,
+        "total_ms": 28186.13,
+        "tokens_per_sec": 4.54,
+        "peak_mem_mb": 3822.4
+      },
+      "cached": {
+        "prefill_ms": 175.11,
+        "decode_ms": 16859.0,
+        "ms_per_token": 132.75,
+        "total_ms": 17097.27,
+        "tokens_per_sec": 7.5,
+        "peak_mem_mb": 3716.79,
+        "kv_cache_mb": 9.703
+      },
+      "comparison": {
+        "e2e_speedup": 1.65,
+        "decode_speedup": 1.66,
+        "throughput_gain_pct": 65.1,
+        "memory_delta_mb": -105.61
+      }
+    },
+    {
+      "prompt_name": "long",
+      "prompt_length": 260,
+      "gen_length": 32,
+      "uncached": {
+        "prefill_ms": 254.74,
+        "decode_ms": 7609.75,
+        "ms_per_token": 245.48,
+        "total_ms": 7882.81,
+        "tokens_per_sec": 4.06,
+        "peak_mem_mb": 3835.4
+      },
+      "cached": {
+        "prefill_ms": 229.5,
+        "decode_ms": 4161.73,
+        "ms_per_token": 134.25,
+        "total_ms": 4408.72,
+        "tokens_per_sec": 7.26,
+        "peak_mem_mb": 3817.67,
+        "kv_cache_mb": 10.23
+      },
+      "comparison": {
+        "e2e_speedup": 1.79,
+        "decode_speedup": 1.83,
+        "throughput_gain_pct": 78.8,
+        "memory_delta_mb": -17.74
+      }
+    },
+    {
+      "prompt_name": "long",
+      "prompt_length": 260,
+      "gen_length": 64,
+      "uncached": {
+        "prefill_ms": 258.69,
+        "decode_ms": 126394.79,
+        "ms_per_token": 2006.27,
+        "total_ms": 126692.61,
+        "tokens_per_sec": 2.04,
+        "peak_mem_mb": 3864.15
+      },
+      "cached": {
+        "prefill_ms": 250.27,
+        "decode_ms": 8562.2,
+        "ms_per_token": 135.91,
+        "total_ms": 8845.85,
+        "tokens_per_sec": 7.27,
+        "peak_mem_mb": 3817.67,
+        "kv_cache_mb": 11.355
+      },
+      "comparison": {
+        "e2e_speedup": 14.32,
+        "decode_speedup": 14.76,
+        "throughput_gain_pct": 256.0,
+        "memory_delta_mb": -46.49
+      }
+    },
+    {
+      "prompt_name": "long",
+      "prompt_length": 260,
+      "gen_length": 128,
+      "uncached": {
+        "prefill_ms": 264.71,
+        "decode_ms": 43906.22,
+        "ms_per_token": 345.72,
+        "total_ms": 44254.41,
+        "tokens_per_sec": 2.92,
+        "peak_mem_mb": 3919.16
+      },
+      "cached": {
+        "prefill_ms": 247.6,
+        "decode_ms": 16959.28,
+        "ms_per_token": 133.54,
+        "total_ms": 17275.71,
+        "tokens_per_sec": 7.41,
+        "peak_mem_mb": 3817.67,
+        "kv_cache_mb": 13.605
+      },
+      "comparison": {
+        "e2e_speedup": 2.56,
+        "decode_speedup": 2.59,
+        "throughput_gain_pct": 153.4,
+        "memory_delta_mb": -101.5
+      }
+    }
+  ]
+}
