@@ -1,0 +1,234 @@
+{
+  "metadata": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "target_model": "Qwen/Qwen2.5-3B-Instruct",
+    "draft_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "adapter": "task1/outputs/adapter",
+    "max_new_tokens": 64,
+    "gamma_values": [
+      1,
+      3,
+      5,
+      7
+    ]
+  },
+  "prompts": [
+    {
+      "prompt_id": "structured_clinical_json",
+      "prompt_name": "Structured Clinical JSON Extraction",
+      "baseline": {
+        "num_tokens": 52,
+        "latency_ms": 6667.083050000656,
+        "tokens_per_sec": 7.799512861924659,
+        "vram_mb": 4819.28173828125
+      },
+      "speculative": {
+        "gamma_1": {
+          "gamma": 1,
+          "num_tokens": 52,
+          "latency_ms": 6209.837299998981,
+          "prefill_ms": 320.73345000026166,
+          "draft_ms": 995.7012500017299,
+          "verify_ms": 4076.5235500075505,
+          "tokens_per_sec": 8.382426821777173,
+          "speedup": 1.0736324847032226,
+          "alpha_percent": 88.89,
+          "mean_accepted_per_step": 0.89,
+          "verification_steps": 27,
+          "passes_saved_percent": 48.07692307692307,
+          "vram_mb": 4844.2763671875
+        },
+        "gamma_3": {
+          "gamma": 3,
+          "num_tokens": 52,
+          "latency_ms": 4279.391250001936,
+          "prefill_ms": 323.9217499994993,
+          "draft_ms": 1477.9580499962321,
+          "verify_ms": 2173.2071500027814,
+          "tokens_per_sec": 12.158464669843696,
+          "speedup": 1.5579512740270336,
+          "alpha_percent": 70.0,
+          "mean_accepted_per_step": 2.06,
+          "verification_steps": 17,
+          "passes_saved_percent": 67.3076923076923,
+          "vram_mb": 4844.2763671875
+        },
+        "gamma_5": {
+          "gamma": 5,
+          "num_tokens": 52,
+          "latency_ms": 3799.703349999618,
+          "prefill_ms": 289.5553500002279,
+          "draft_ms": 1751.7530500063003,
+          "verify_ms": 1641.9082500033255,
+          "tokens_per_sec": 13.690854054016341,
+          "speedup": 1.7546325162466503,
+          "alpha_percent": 62.9,
+          "mean_accepted_per_step": 3.0,
+          "verification_steps": 13,
+          "passes_saved_percent": 75.0,
+          "vram_mb": 4844.2763671875
+        },
+        "gamma_7": {
+          "gamma": 7,
+          "num_tokens": 52,
+          "latency_ms": 4565.882300001249,
+          "prefill_ms": 282.6097500001197,
+          "draft_ms": 2152.1477500045876,
+          "verify_ms": 2017.9961999983789,
+          "tokens_per_sec": 11.388991452052625,
+          "speedup": 1.46019599541557,
+          "alpha_percent": 50.629999999999995,
+          "mean_accepted_per_step": 3.33,
+          "verification_steps": 12,
+          "passes_saved_percent": 76.92307692307692,
+          "vram_mb": 4861.68994140625
+        }
+      }
+    },
+    {
+      "prompt_id": "clinical_soap_narrative",
+      "prompt_name": "Clinical SOAP Narrative Note",
+      "baseline": {
+        "num_tokens": 64,
+        "latency_ms": 7153.79054999903,
+        "tokens_per_sec": 8.946306095026598,
+        "vram_mb": 4818.7177734375
+      },
+      "speculative": {
+        "gamma_1": {
+          "gamma": 1,
+          "num_tokens": 64,
+          "latency_ms": 7793.925199999649,
+          "prefill_ms": 308.39205000120273,
+          "draft_ms": 1297.8972499950032,
+          "verify_ms": 5321.81950001177,
+          "tokens_per_sec": 8.211630453123288,
+          "speedup": 0.9178674886435082,
+          "alpha_percent": 72.97,
+          "mean_accepted_per_step": 0.73,
+          "verification_steps": 37,
+          "passes_saved_percent": 42.1875,
+          "vram_mb": 4842.7666015625
+        },
+        "gamma_3": {
+          "gamma": 3,
+          "num_tokens": 64,
+          "latency_ms": 5609.740699999747,
+          "prefill_ms": 303.47189999883994,
+          "draft_ms": 2051.460099994074,
+          "verify_ms": 2909.6644000001106,
+          "tokens_per_sec": 11.502644930461926,
+          "speedup": 1.2752444243990373,
+          "alpha_percent": 57.97,
+          "mean_accepted_per_step": 1.67,
+          "verification_steps": 24,
+          "passes_saved_percent": 62.5,
+          "vram_mb": 4842.7666015625
+        },
+        "gamma_5": {
+          "gamma": 5,
+          "num_tokens": 64,
+          "latency_ms": 5764.96969999971,
+          "prefill_ms": 286.5857500000857,
+          "draft_ms": 2646.3409999996657,
+          "verify_ms": 2615.1281999973435,
+          "tokens_per_sec": 11.101724737660572,
+          "speedup": 1.2409068776197365,
+          "alpha_percent": 44.330000000000005,
+          "mean_accepted_per_step": 2.05,
+          "verification_steps": 21,
+          "passes_saved_percent": 67.1875,
+          "vram_mb": 4842.7666015625
+        },
+        "gamma_7": {
+          "gamma": 7,
+          "num_tokens": 64,
+          "latency_ms": 6223.938199998884,
+          "prefill_ms": 279.35059999981604,
+          "draft_ms": 2966.336700003012,
+          "verify_ms": 2850.720550002734,
+          "tokens_per_sec": 10.282973115568446,
+          "speedup": 1.149399354575904,
+          "alpha_percent": 42.199999999999996,
+          "mean_accepted_per_step": 2.56,
+          "verification_steps": 18,
+          "passes_saved_percent": 71.875,
+          "vram_mb": 4861.23974609375
+        }
+      }
+    },
+    {
+      "prompt_id": "open_medical_qa",
+      "prompt_name": "Open Medical Reasoning & QA",
+      "baseline": {
+        "num_tokens": 64,
+        "latency_ms": 7462.130450001496,
+        "tokens_per_sec": 8.57663912857315,
+        "vram_mb": 4814.55078125
+      },
+      "speculative": {
+        "gamma_1": {
+          "gamma": 1,
+          "num_tokens": 64,
+          "latency_ms": 7065.034450000894,
+          "prefill_ms": 263.9773499995499,
+          "draft_ms": 1148.7055500019778,
+          "verify_ms": 4764.114750005319,
+          "tokens_per_sec": 9.082212225650444,
+          "speedup": 1.0562058122732227,
+          "alpha_percent": 80.0,
+          "mean_accepted_per_step": 0.8,
+          "verification_steps": 35,
+          "passes_saved_percent": 45.3125,
+          "vram_mb": 4814.5517578125
+        },
+        "gamma_3": {
+          "gamma": 3,
+          "num_tokens": 64,
+          "latency_ms": 5201.187100001334,
+          "prefill_ms": 239.5465499994316,
+          "draft_ms": 1999.8743499963894,
+          "verify_ms": 2659.8678500013193,
+          "tokens_per_sec": 12.334447199668784,
+          "speedup": 1.4346975616392614,
+          "alpha_percent": 57.97,
+          "mean_accepted_per_step": 1.74,
+          "verification_steps": 23,
+          "passes_saved_percent": 64.0625,
+          "vram_mb": 4814.5517578125
+        },
+        "gamma_5": {
+          "gamma": 5,
+          "num_tokens": 64,
+          "latency_ms": 5563.208199999281,
+          "prefill_ms": 217.78015000018058,
+          "draft_ms": 2718.6068999981217,
+          "verify_ms": 2510.477350004294,
+          "tokens_per_sec": 11.520753059732554,
+          "speedup": 1.3413358230961876,
+          "alpha_percent": 46.81,
+          "mean_accepted_per_step": 2.32,
+          "verification_steps": 19,
+          "passes_saved_percent": 70.3125,
+          "vram_mb": 4814.5517578125
+        },
+        "gamma_7": {
+          "gamma": 7,
+          "num_tokens": 64,
+          "latency_ms": 6795.548199999757,
+          "prefill_ms": 219.66339999926277,
+          "draft_ms": 3422.8048999993916,
+          "verify_ms": 3073.5176499947556,
+          "tokens_per_sec": 9.418261130503916,
+          "speedup": 1.0980910193531939,
+          "alpha_percent": 36.89,
+          "mean_accepted_per_step": 2.5,
+          "verification_steps": 18,
+          "passes_saved_percent": 71.875,
+          "vram_mb": 4840.8388671875
+        }
+      }
+    }
+  ]
+}
