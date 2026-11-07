@@ -1,0 +1,24 @@
+{
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "toy_test": {
+    "test": "toy_controlled_example",
+    "non_causal_max_diff": 1.9073486328125e-06,
+    "causal_max_diff": 1.9073486328125e-06,
+    "causal_upper_triangle_zero": true,
+    "passed": true
+  },
+  "total_parametric_tests": 36,
+  "parametric_tests_passed": 36,
+  "max_diff_across_all_float32": 7.748603820800781e-07,
+  "irregular_tests_passed": 6,
+  "fp16_test": {
+    "dtype": "float16",
+    "seq_len": 512,
+    "head_dim": 128,
+    "max_abs_diff": 0.001953125,
+    "mean_abs_diff": 5.161762237548828e-05,
+    "passed": true
+  },
+  "overall_status": "ALL TESTS PASSED"
+}
