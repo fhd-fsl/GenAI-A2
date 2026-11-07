@@ -288,3 +288,4 @@ def generate_markdown_summary(data: Dict[str, Any], output_path: Path):
 
 if __name__ == "__main__":
     run_benchmark()
+

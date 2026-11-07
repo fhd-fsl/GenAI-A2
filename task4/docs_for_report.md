@@ -287,3 +287,4 @@ All components for Task 4 are complete and self-contained in `task4/`:
 - **`task4/outputs/benchmark_results.json`**: Machine-readable latency and memory benchmark data.
 - **`task4/outputs/benchmark_summary.md`**: Markdown summary tables for reports.
 - **`task4/docs_for_report.md`**: IEEE research report chapter with proofs and architectural analysis.
+
