@@ -3,188 +3,208 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrialMatch — Clinical Screening & Inference Benchmarks</title>
+  <title>TrialMatch — Clinical Trial Eligibility Screening & Benchmarks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
-  <!-- Chart.js for interactive benchmark visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <nav class="main-nav">
-    <div class="nav-left">
-      <div class="brand">
-        <i data-lucide="activity" class="brand-icon"></i>
-        <span class="brand-title">TrialMatch</span>
-        <span class="model-badge">Qwen 2.5-3B + LoRA</span>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div class="brand-info">
+          <div class="brand-row">
+            <h1 class="brand-name">TrialMatch</h1>
+            <span class="badge-model">Qwen 2.5-3B &bull; LoRA</span>
+          </div>
+          <p class="brand-tagline">Clinical Trial Matching & Inference Engine</p>
+        </div>
       </div>
-      <div class="nav-tabs">
-        <button class="tab-btn active" data-tab="tab-screener">
-          <i data-lucide="clipboard-check"></i>
-          <span>Screening</span>
+
+      <nav class="header-nav">
+        <button class="nav-tab active" data-tab="tab-screener">
+          <i data-lucide="user-check"></i>
+          <span>Eligibility Screener</span>
         </button>
-        <button class="tab-btn" data-tab="tab-decoding">
+        <button class="nav-tab" data-tab="tab-decoding">
           <i data-lucide="cpu"></i>
           <span>Decoding Lab</span>
         </button>
-        <button class="tab-btn" data-tab="tab-attention">
-          <i data-lucide="bar-chart-2"></i>
+        <button class="nav-tab" data-tab="tab-attention">
+          <i data-lucide="line-chart"></i>
           <span>Attention & Benchmarks</span>
         </button>
-      </div>
-    </div>
-    <div class="nav-right">
-      <div class="hardware-pill" id="hardwareStatusPill">
-        <span class="pulse-dot"></span>
-        <span id="hardwareText">Connecting...</span>
-      </div>
-    </div>
-  </nav>
+      </nav>
 
-  <!-- Main Container -->
-  <main class="app-container">
+      <div class="header-status">
+        <div class="hw-badge" id="hardwareStatusPill">
+          <span class="hw-dot"></span>
+          <span id="hardwareText" class="hw-text">Connecting...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="app-main">
 
     <!-- ========================================================================= -->
-    <!-- TAB 1: CLINICAL TRIAL ELIGIBILITY SCREENER -->
+    <!-- TAB 1: CLINICAL TRIAL SCREENER -->
     <!-- ========================================================================= -->
     <section id="tab-screener" class="tab-panel active">
-      <div class="screener-grid">
+      <div class="workbench-layout">
         
-        <!-- Left Column: Inputs Workbench -->
-        <aside class="screener-sidebar">
+        <!-- Left Panel: Input Workbench -->
+        <aside class="panel-workbench">
           
-          <!-- Preset Selector Bar -->
-          <div class="workbench-section">
-            <div class="section-row">
-              <label class="control-label" for="presetCaseSelect">Case Preset</label>
-              <button class="btn-text" id="btnClearInputs" title="Clear note and criteria">
+          <!-- Preset Selector -->
+          <div class="control-card">
+            <div class="card-header-clean">
+              <span class="card-label">Patient Case Preset</span>
+              <button class="btn-ghost-sm" id="btnClearInputs" title="Reset fields">
                 <i data-lucide="rotate-ccw"></i> Reset
               </button>
             </div>
-            <select id="presetCaseSelect" class="form-select">
-              <option value="">Select a test or unseen clinical case...</option>
+            <select id="presetCaseSelect" class="ui-select">
+              <option value="">Select a clinical trial case...</option>
             </select>
-            <div class="preset-meta" id="presetMeta" style="display: none;">
-              <span class="meta-tag">Pt: <strong id="metaPatientId">-</strong></span>
-              <span class="meta-tag">Trial: <strong id="metaTrialId">-</strong></span>
+            <div class="preset-meta-tags" id="presetMeta" style="display: none;">
+              <span class="meta-pill">Patient: <strong id="metaPatientId">-</strong></span>
+              <span class="meta-pill">Trial: <strong id="metaTrialId">-</strong></span>
             </div>
           </div>
 
-          <!-- Patient Record Editor -->
-          <div class="workbench-section">
-            <div class="section-row">
-              <label class="control-label" for="patientNoteInput">Patient Clinical Note</label>
-              <button class="btn-text" id="btnToggleSentenceView">
+          <!-- Patient Note Input -->
+          <div class="control-card">
+            <div class="card-header-clean">
+              <span class="card-label">Patient Clinical Description</span>
+              <button class="btn-ghost-sm" id="btnToggleSentenceView">
                 <i data-lucide="list-ordered"></i> Sentences (<span id="sentenceCountBadge">0</span>)
               </button>
             </div>
-            <textarea id="patientNoteInput" class="form-textarea" rows="8" placeholder="Paste clinical note text..."></textarea>
-            <div id="sentenceBreakdownViewer" class="sentence-list" style="display: none;"></div>
+            <textarea id="patientNoteInput" class="ui-textarea note-textarea" rows="7" placeholder="Paste unstructured patient notes here..."></textarea>
+            <div id="sentenceBreakdownViewer" class="sentence-inspector" style="display: none;"></div>
           </div>
 
-          <!-- Criteria Builder -->
-          <div class="workbench-section criteria-section">
-            <div class="section-row">
-              <label class="control-label">Trial Criteria</label>
-              <button class="btn-sm btn-outline" id="btnAddCriterion">
+          <!-- Criteria List -->
+          <div class="control-card criteria-card">
+            <div class="card-header-clean">
+              <span class="card-label">Trial Eligibility Criteria</span>
+              <button class="btn-ghost-sm highlight" id="btnAddCriterion">
                 <i data-lucide="plus"></i> Add Criterion
               </button>
             </div>
-            <div id="criteriaListContainer" class="criteria-list"></div>
+            <div id="criteriaListContainer" class="criteria-scroll-list"></div>
           </div>
 
-          <!-- Execution Bar -->
-          <div class="workbench-section execution-bar">
-            <div class="mode-select-row">
-              <label class="control-label">Decoding Mode</label>
-              <select id="decodingModeSelect" class="form-select form-select-sm">
-                <option value="kv_cached" selected>KV-Cached Greedy</option>
-                <option value="speculative">Speculative Decoding (0.5B Draft)</option>
-                <option value="uncached">Uncached Baseline</option>
+          <!-- Execution Settings & Trigger -->
+          <div class="control-card execution-card">
+            <div class="form-row">
+              <label class="card-label nowrap" for="decodingModeSelect">Decoding Engine</label>
+              <select id="decodingModeSelect" class="ui-select ui-select-sm">
+                <option value="kv_cached" selected>KV-Cached Greedy (Task 3)</option>
+                <option value="speculative">Speculative (0.5B Draft, Task 5)</option>
+                <option value="uncached">Uncached Baseline (O(N&sup2;))</option>
               </select>
             </div>
-            <div class="gamma-row" id="gammaControlGroup" style="display: none;">
-              <span class="control-label">Lookahead (&gamma;): <strong id="gammaValueLabel">3</strong></span>
-              <input type="range" id="gammaRange" min="1" max="7" step="2" value="3" class="form-range">
+
+            <div class="form-row gamma-row" id="gammaControlGroup" style="display: none;">
+              <label class="card-label nowrap">Draft Horizon (&gamma;): <strong id="gammaValueLabel">3</strong></label>
+              <input type="range" id="gammaRange" min="1" max="7" step="2" value="3" class="ui-range">
             </div>
-            <button id="btnRunScreening" class="btn-primary btn-block">
+
+            <button id="btnRunScreening" class="btn-action-primary">
               <span id="screenBtnSpinner" class="spinner" style="display: none;"></span>
               <i data-lucide="play" id="screenBtnIcon"></i>
-              <span>Screen Patient</span>
+              <span>Run Patient Screening</span>
             </button>
           </div>
 
         </aside>
 
-        <!-- Right Column: Results & Evidence -->
-        <section class="screener-main">
+        <!-- Right Panel: Results & Clinical Evidence -->
+        <section class="panel-results">
           
           <!-- Overall Verdict Card -->
           <div id="overallVerdictCard" class="verdict-banner" style="display: none;">
-            <div class="verdict-header">
-              <div class="verdict-icon" id="verdictIcon"></div>
-              <div class="verdict-details">
-                <h2 class="verdict-title" id="verdictTitle">-</h2>
-                <p class="verdict-summary" id="verdictSummary">-</p>
-                <div class="verdict-rule" id="verdictRule">-</div>
+            <div class="verdict-main">
+              <div class="verdict-icon-box" id="verdictIcon"></div>
+              <div class="verdict-copy">
+                <div class="verdict-badge-row">
+                  <span class="verdict-status-pill" id="verdictStatusPill">Verdict</span>
+                  <h2 class="verdict-heading" id="verdictTitle">-</h2>
+                </div>
+                <p class="verdict-text" id="verdictSummary">-</p>
+                <div class="verdict-rule-trace" id="verdictRule">-</div>
               </div>
             </div>
-            <div class="verdict-stats" id="verdictStats"></div>
+
+            <div class="verdict-counts-bar" id="verdictStats"></div>
           </div>
 
-          <!-- Filter & Export Toolbar -->
+          <!-- Toolbar: Filter & Export -->
           <div class="results-toolbar" id="resultsToolbar" style="display: none;">
-            <div class="filter-group">
-              <button class="pill-filter active" data-filter="all">All (<span id="countAll">0</span>)</button>
-              <button class="pill-filter" data-filter="inclusion">Inclusion (<span id="countInc">0</span>)</button>
-              <button class="pill-filter" data-filter="exclusion">Exclusion (<span id="countExc">0</span>)</button>
-              <button class="pill-filter" data-filter="missing">Missing Info (<span id="countMiss">0</span>)</button>
+            <div class="filter-pills">
+              <span class="toolbar-label">Filter:</span>
+              <button class="filter-tab active" data-filter="all">All (<span id="countAll">0</span>)</button>
+              <button class="filter-tab" data-filter="inclusion">Inclusion (<span id="countInc">0</span>)</button>
+              <button class="filter-tab" data-filter="exclusion">Exclusion (<span id="countExc">0</span>)</button>
+              <button class="filter-tab" data-filter="missing">Missing Info (<span id="countMiss">0</span>)</button>
             </div>
-            <div class="export-group">
-              <button class="btn-sm btn-outline" id="btnExportHtml">
-                <i data-lucide="file-text"></i> Export PDF/HTML
+            <div class="export-actions">
+              <button class="btn-secondary-sm" id="btnExportHtml">
+                <i data-lucide="printer"></i> Export Report
               </button>
-              <button class="btn-sm btn-outline" id="btnExportJson">
+              <button class="btn-secondary-sm" id="btnExportJson">
                 <i data-lucide="download"></i> JSON
               </button>
             </div>
           </div>
 
-          <!-- Criterion Decisions Container -->
+          <!-- Criteria Cards Container -->
           <div id="criteriaResultsContainer" class="results-container">
-            <div class="empty-state">
-              <i data-lucide="clipboard" class="empty-icon"></i>
-              <p>Load a preset or enter patient notes to screen criteria.</p>
+            <div class="empty-placeholder">
+              <div class="empty-icon-box">
+                <i data-lucide="clipboard-list"></i>
+              </div>
+              <h3 class="empty-title">Ready for Screening</h3>
+              <p class="empty-desc">Select a preset clinical trial or enter custom patient notes and criteria on the left, then click <strong>Run Patient Screening</strong>.</p>
             </div>
           </div>
 
-          <!-- Telemetry Footer Bar -->
-          <div id="screeningTelemetryCard" class="telemetry-bar" style="display: none;">
-            <div class="telemetry-item">
-              <span class="telem-label">Mode:</span>
-              <strong id="telemetryModeBadge">KV-Cached</strong>
+          <!-- Telemetry Status Bar -->
+          <div id="screeningTelemetryCard" class="telemetry-strip" style="display: none;">
+            <div class="telem-col">
+              <span class="telem-k">Engine</span>
+              <span class="telem-v" id="telemetryModeBadge">-</span>
             </div>
-            <div class="telemetry-item">
-              <span class="telem-label">Latency:</span>
-              <strong id="telemTime">-</strong>
+            <div class="telem-col">
+              <span class="telem-k">Latency</span>
+              <span class="telem-v" id="telemTime">-</span>
             </div>
-            <div class="telemetry-item">
-              <span class="telem-label">Tokens:</span>
-              <strong id="telemTokens">-</strong>
+            <div class="telem-col">
+              <span class="telem-k">Tokens Generated</span>
+              <span class="telem-v" id="telemTokens">-</span>
             </div>
-            <div class="telemetry-item">
-              <span class="telem-label">Throughput:</span>
-              <strong id="telemThroughput">-</strong>
+            <div class="telem-col">
+              <span class="telem-k">Generation Speed</span>
+              <span class="telem-v highlight" id="telemThroughput">-</span>
             </div>
-            <div class="telemetry-item">
-              <span class="telem-label">Passes Saved:</span>
-              <strong class="highlight-green" id="telemPassesSaved">-</strong>
+            <div class="telem-col">
+              <span class="telem-k">Passes Saved</span>
+              <span class="telem-v highlight-green" id="telemPassesSaved">-</span>
             </div>
-            <div class="telemetry-item">
-              <span class="telem-label">Peak VRAM:</span>
-              <strong id="telemVram">-</strong>
+            <div class="telem-col">
+              <span class="telem-k">Peak VRAM</span>
+              <span class="telem-v" id="telemVram">-</span>
             </div>
           </div>
 
@@ -197,140 +217,168 @@
     <!-- TAB 2: LIVE DECODING COMPARISON LAB -->
     <!-- ========================================================================= -->
     <section id="tab-decoding" class="tab-panel">
-      <div class="lab-container">
+      <div class="lab-shell">
         
-        <!-- Controls Bar -->
+        <!-- Controls Card -->
         <div class="lab-card">
-          <div class="compare-input-grid">
-            <div class="form-group full-width">
-              <div class="section-row">
-                <label class="control-label" for="comparePromptPreset">Prompt Template</label>
-                <div class="slider-inline">
-                  <span class="control-label">Tokens: <strong id="lblCompareBudget">48</strong></span>
-                  <input type="range" id="rngCompareBudget" min="16" max="96" step="16" value="48" class="form-range">
-                  <span class="control-label" style="margin-left: 1rem;">Lookahead (&gamma;): <strong id="lblCompareGamma">3</strong></span>
-                  <input type="range" id="rngCompareGamma" min="1" max="7" step="2" value="3" class="form-range">
-                </div>
-              </div>
-              <select id="comparePromptPreset" class="form-select">
-                <option value="json">Clinical JSON Extraction</option>
-                <option value="narrative">Clinical SOAP Narrative Note</option>
-                <option value="reasoning">Open Medical Reasoning & QA</option>
-                <option value="custom">Custom Prompt...</option>
+          <div class="lab-card-header">
+            <div>
+              <h2 class="lab-card-title">Comparative Decoding Laboratory</h2>
+              <p class="lab-card-subtitle">Execute identical prompt through Uncached, KV-Cached, and Speculative engines on GPU.</p>
+            </div>
+            <div class="lab-card-actions">
+              <button id="btnRunCompareDecoding" class="btn-action-primary">
+                <span id="compareBtnSpinner" class="spinner" style="display: none;"></span>
+                <i data-lucide="zap" id="compareBtnIcon"></i>
+                <span>Execute Benchmark</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="lab-form-grid">
+            <div class="form-field">
+              <label class="card-label">Prompt Template</label>
+              <select id="comparePromptPreset" class="ui-select">
+                <option value="json">Clinical Trial JSON Extraction (Low Entropy)</option>
+                <option value="narrative">Clinical SOAP Narrative (Semi-Structured)</option>
+                <option value="reasoning">Medical Reasoning & Mechanism (High Entropy)</option>
+                <option value="custom">Custom Clinical Prompt...</option>
               </select>
             </div>
-            <div class="form-group full-width">
-              <textarea id="comparePromptInput" class="form-textarea" rows="3"></textarea>
+
+            <div class="form-field slider-field">
+              <div class="slider-box">
+                <span class="card-label">Tokens: <strong id="lblCompareBudget">48</strong></span>
+                <input type="range" id="rngCompareBudget" min="16" max="96" step="16" value="48" class="ui-range">
+              </div>
+              <div class="slider-box">
+                <span class="card-label">Draft Lookahead (&gamma;): <strong id="lblCompareGamma">3</strong></span>
+                <input type="range" id="rngCompareGamma" min="1" max="7" step="2" value="3" class="ui-range">
+              </div>
+            </div>
+
+            <div class="form-field full-width">
+              <label class="card-label">Input Prompt</label>
+              <textarea id="comparePromptInput" class="ui-textarea" rows="3"></textarea>
             </div>
           </div>
+        </div>
 
-          <div class="action-row">
-            <button id="btnRunCompareDecoding" class="btn-primary">
-              <span id="compareBtnSpinner" class="spinner" style="display: none;"></span>
-              <i data-lucide="zap" id="compareBtnIcon"></i>
-              <span>Run Comparison</span>
-            </button>
+        <!-- Equivalence Banner -->
+        <div id="tokenEquivalenceBanner" class="equivalence-strip" style="display: none;">
+          <div class="eq-icon-wrap">
+            <i data-lucide="check-circle-2"></i>
+          </div>
+          <div class="eq-body">
+            <div class="eq-headline" id="eqTitle">100.00% Exact Greedy Token Equivalence Verified</div>
+            <div class="eq-sub" id="eqDetails">All generated tokens match with 0 discrepancy across all three decoding engines.</div>
           </div>
         </div>
 
-        <!-- Token Equivalence Verification Banner -->
-        <div id="tokenEquivalenceBanner" class="equivalence-banner" style="display: none;">
-          <i data-lucide="check-circle" class="eq-icon"></i>
-          <div>
-            <strong id="eqTitle">100% Exact Greedy Token Equivalence</strong>
-            <span id="eqDetails" class="eq-subtext">Identical token sequence across all three decoding engines.</span>
-          </div>
-        </div>
-
-        <!-- Comparison Results Grid -->
-        <div class="compare-results-grid" id="compareResultsGrid" style="display: none;">
+        <!-- Results Grid -->
+        <div class="compare-grid" id="compareResultsGrid" style="display: none;">
           
           <!-- Mode 1: Uncached -->
-          <div class="mode-card mode-uncached">
-            <div class="mode-header">
-              <h3>Uncached Baseline</h3>
-              <span class="mode-tag tag-muted">O(N&sup2;)</span>
+          <div class="engine-card uncached">
+            <div class="engine-head">
+              <div>
+                <h3 class="engine-title">Uncached Baseline</h3>
+                <span class="engine-badge badge-neutral">O(N&sup2;) Quadratic</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Latency:</span>
-              <span class="m-val" id="mUncTime">-</span>
+            <div class="engine-metrics">
+              <div class="m-row">
+                <span class="m-k">Latency</span>
+                <span class="m-v" id="mUncTime">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speed</span>
+                <span class="m-v" id="mUncTps">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speedup</span>
+                <span class="m-v">1.00x (Ref)</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Peak Memory</span>
+                <span class="m-v" id="mUncVram">-</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Speed:</span>
-              <span class="m-val" id="mUncTps">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Speedup:</span>
-              <span class="m-val">1.00x</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Peak VRAM:</span>
-              <span class="m-val" id="mUncVram">-</span>
-            </div>
-            <div class="generated-box">
-              <pre id="mUncText">-</pre>
+            <div class="engine-output">
+              <label class="output-label">Generated Sequence</label>
+              <pre id="mUncText" class="output-text">-</pre>
             </div>
           </div>
 
           <!-- Mode 2: KV-Cached -->
-          <div class="mode-card mode-cached">
-            <div class="mode-header">
-              <h3>KV-Cached</h3>
-              <span class="mode-tag tag-blue">Task 3</span>
+          <div class="engine-card cached">
+            <div class="engine-head">
+              <div>
+                <h3 class="engine-title">Explicit KV-Cached</h3>
+                <span class="engine-badge badge-blue">Task 3 Engine</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Latency:</span>
-              <span class="m-val" id="mKvTime">-</span>
+            <div class="engine-metrics">
+              <div class="m-row">
+                <span class="m-k">Latency</span>
+                <span class="m-v" id="mKvTime">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speed</span>
+                <span class="m-v" id="mKvTps">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speedup vs Uncached</span>
+                <span class="m-v text-blue" id="mKvSpeedup">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Peak Memory</span>
+                <span class="m-v" id="mKvVram">-</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Speed:</span>
-              <span class="m-val" id="mKvTps">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Speedup vs Uncached:</span>
-              <span class="m-val highlight-blue" id="mKvSpeedup">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Peak VRAM:</span>
-              <span class="m-val" id="mKvVram">-</span>
-            </div>
-            <div class="generated-box">
-              <pre id="mKvText">-</pre>
+            <div class="engine-output">
+              <label class="output-label">Generated Sequence</label>
+              <pre id="mKvText" class="output-text">-</pre>
             </div>
           </div>
 
           <!-- Mode 3: Speculative -->
-          <div class="mode-card mode-speculative">
-            <div class="mode-header">
-              <h3>Speculative</h3>
-              <span class="mode-tag tag-green" id="mSpecTag">Task 5</span>
+          <div class="engine-card speculative">
+            <div class="engine-head">
+              <div>
+                <h3 class="engine-title">Speculative Decoding</h3>
+                <span class="engine-badge badge-green" id="mSpecTag">Task 5 (&gamma;=3)</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Latency:</span>
-              <span class="m-val" id="mSpecTime">-</span>
+            <div class="engine-metrics">
+              <div class="m-row">
+                <span class="m-k">Latency</span>
+                <span class="m-v" id="mSpecTime">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speed</span>
+                <span class="m-v" id="mSpecTps">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Speedup vs KV-Cache</span>
+                <span class="m-v text-green" id="mSpecSpeedupCached">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Acceptance Rate (&alpha;)</span>
+                <span class="m-v" id="mSpecAlpha">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Target Passes Saved</span>
+                <span class="m-v text-green" id="mSpecPasses">-</span>
+              </div>
+              <div class="m-row">
+                <span class="m-k">Peak Memory</span>
+                <span class="m-v" id="mSpecVram">-</span>
+              </div>
             </div>
-            <div class="metric-row">
-              <span class="m-label">Speed:</span>
-              <span class="m-val" id="mSpecTps">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Speedup vs Cached:</span>
-              <span class="m-val highlight-green" id="mSpecSpeedupCached">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Acceptance (&alpha;):</span>
-              <span class="m-val" id="mSpecAlpha">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Passes Saved:</span>
-              <span class="m-val highlight-green" id="mSpecPasses">-</span>
-            </div>
-            <div class="metric-row">
-              <span class="m-label">Peak VRAM:</span>
-              <span class="m-val" id="mSpecVram">-</span>
-            </div>
-            <div class="generated-box">
-              <pre id="mSpecText">-</pre>
+            <div class="engine-output">
+              <label class="output-label">Generated Sequence</label>
+              <pre id="mSpecText" class="output-text">-</pre>
             </div>
           </div>
 
@@ -343,14 +391,28 @@
     <!-- TAB 3: TILED ATTENTION LAB & BENCHMARKS -->
     <!-- ========================================================================= -->
     <section id="tab-attention" class="tab-panel">
-      <div class="lab-container">
+      <div class="lab-shell">
         
-        <!-- Live Attention Kernel Runner -->
+        <!-- Live Attention Kernel Execution -->
         <div class="lab-card">
-          <div class="attention-controls-grid">
-            <div class="form-group">
-              <label class="control-label" for="attSeqLenSelect">Seq Length (N)</label>
-              <select id="attSeqLenSelect" class="form-select">
+          <div class="lab-card-header">
+            <div>
+              <h2 class="lab-card-title">Live Tiled Attention Execution (Task 4)</h2>
+              <p class="lab-card-subtitle">Run Reference SDPA, Tiled Online-Softmax, and PyTorch Fused Attention kernels on GPU.</p>
+            </div>
+            <div class="lab-card-actions">
+              <button id="btnRunLiveAttention" class="btn-action-primary">
+                <span id="attBtnSpinner" class="spinner" style="display: none;"></span>
+                <i data-lucide="play" id="attBtnIcon"></i>
+                <span>Run Attention Kernels</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="attention-controls-row">
+            <div class="param-box">
+              <label class="card-label">Seq Length (N)</label>
+              <select id="attSeqLenSelect" class="ui-select">
                 <option value="128">128</option>
                 <option value="256">256</option>
                 <option value="512" selected>512</option>
@@ -358,136 +420,141 @@
                 <option value="2048">2,048</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="control-label" for="attHeadDimSelect">Head Dim (d)</label>
-              <select id="attHeadDimSelect" class="form-select">
+            <div class="param-box">
+              <label class="card-label">Head Dim (d)</label>
+              <select id="attHeadDimSelect" class="ui-select">
                 <option value="64">64</option>
-                <option value="128" selected>128 (Qwen2.5)</option>
+                <option value="128" selected>128 (Qwen)</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="control-label" for="attBlockRSelect">Tile B_r</label>
-              <select id="attBlockRSelect" class="form-select">
+            <div class="param-box">
+              <label class="card-label">Row Tile (B_r)</label>
+              <select id="attBlockRSelect" class="ui-select">
                 <option value="16">16</option>
                 <option value="32" selected>32</option>
                 <option value="64">64</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="control-label" for="attBlockCSelect">Tile B_c</label>
-              <select id="attBlockCSelect" class="form-select">
+            <div class="param-box">
+              <label class="card-label">Col Tile (B_c)</label>
+              <select id="attBlockCSelect" class="ui-select">
                 <option value="16">16</option>
                 <option value="32" selected>32</option>
                 <option value="64">64</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="control-label" for="attCausalSelect">Causal</label>
-              <select id="attCausalSelect" class="form-select">
+            <div class="param-box">
+              <label class="card-label">Causal Mask</label>
+              <select id="attCausalSelect" class="ui-select">
                 <option value="true" selected>Causal</option>
                 <option value="false">Non-Causal</option>
               </select>
             </div>
           </div>
 
-          <div class="action-row">
-            <button id="btnRunLiveAttention" class="btn-primary">
-              <span id="attBtnSpinner" class="spinner" style="display: none;"></span>
-              <i data-lucide="play" id="attBtnIcon"></i>
-              <span>Run Attention Kernels</span>
-            </button>
-          </div>
-
-          <!-- Live Attention Output Display -->
-          <div id="attentionLiveResults" class="attention-output-grid" style="display: none;">
-            <div class="att-result-card">
-              <h4>Reference SDPA</h4>
-              <p class="stat-p">Latency: <strong id="attRefTime">-</strong></p>
-              <p class="stat-p">Memory: <strong id="attRefMem">-</strong></p>
+          <!-- Attention Results Strip -->
+          <div id="attentionLiveResults" class="attention-summary-grid" style="display: none;">
+            <div class="att-card">
+              <div class="att-head">Reference SDPA</div>
+              <div class="att-metric"><span class="m-k">Latency:</span> <strong id="attRefTime">-</strong></div>
+              <div class="att-metric"><span class="m-k">Memory:</span> <strong id="attRefMem">-</strong></div>
             </div>
-            <div class="att-result-card highlight-card">
-              <h4>Tiled Online Softmax</h4>
-              <p class="stat-p">Latency: <strong id="attTiledTime">-</strong></p>
-              <p class="stat-p">Memory: <strong id="attTiledMem">-</strong></p>
-              <span class="badge-tag" id="attMemSavedBadge">-</span>
+            <div class="att-card highlight">
+              <div class="att-head">Tiled Online Softmax</div>
+              <div class="att-metric"><span class="m-k">Latency:</span> <strong id="attTiledTime">-</strong></div>
+              <div class="att-metric"><span class="m-k">Memory:</span> <strong id="attTiledMem">-</strong></div>
+              <span class="badge-green" id="attMemSavedBadge">-</span>
             </div>
-            <div class="att-result-card">
-              <h4>PyTorch Fused (Flash-2)</h4>
-              <p class="stat-p">Latency: <strong id="attFusedTime">-</strong></p>
-              <p class="stat-p">Memory: <strong id="attFusedMem">-</strong></p>
+            <div class="att-card">
+              <div class="att-head">PyTorch Fused (Flash-2)</div>
+              <div class="att-metric"><span class="m-k">Latency:</span> <strong id="attFusedTime">-</strong></div>
+              <div class="att-metric"><span class="m-k">Memory:</span> <strong id="attFusedMem">-</strong></div>
             </div>
-            <div class="att-result-card full-width-card">
-              <div class="precision-row">
-                <span>Max Error: <strong id="attMaxDiff" class="highlight-green">-</strong></span>
+            <div class="att-card full-span">
+              <div class="precision-bar">
+                <span>Numerical Error (|O_tiled - O_ref|<sub>&infin;</sub>): <strong id="attMaxDiff" class="text-green">-</strong></span>
                 <span>Mean Error: <strong id="attMeanDiff">-</strong></span>
-                <span class="status-pass" id="attStatusBadge">&#10004; Verified</span>
+                <span class="status-chip success">&#10004; Verified within Tolerance</span>
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- Empirical Benchmark Dashboards -->
+        <!-- Precomputed Benchmark Dashboards -->
         <div class="lab-card">
-          <div class="benchmark-tabs-nav">
-            <button class="subtab-btn active" data-subtab="sub-task2">Task 2: Classification</button>
-            <button class="subtab-btn" data-subtab="sub-task3">Task 3: KV-Cache</button>
-            <button class="subtab-btn" data-subtab="sub-task4">Task 4: Attention Scaling</button>
-            <button class="subtab-btn" data-subtab="sub-task5">Task 5: Speculative</button>
+          <div class="dash-tabs-bar">
+            <button class="dash-tab active" data-subtab="sub-task2">Task 2: Classification (n=206)</button>
+            <button class="dash-tab" data-subtab="sub-task3">Task 3: KV-Cache Scaling</button>
+            <button class="dash-tab" data-subtab="sub-task4">Task 4: Attention Scaling</button>
+            <button class="dash-tab" data-subtab="sub-task5">Task 5: Speculative Speedup</button>
           </div>
 
-          <!-- Subtab 1: Task 2 -->
+          <!-- Task 2 Subtab -->
           <div id="sub-task2" class="subtab-panel active">
-            <div class="dashboard-grid">
-              <div class="chart-box">
-                <h4>Confusion Matrix (n=206)</h4>
-                <div id="task2ConfusionTableContainer"></div>
+            <div class="charts-2col">
+              <div class="chart-panel">
+                <h4 class="chart-title">Confusion Matrix (Held-out Test Split)</h4>
+                <div id="task2ConfusionTableContainer" class="matrix-wrapper"></div>
               </div>
-              <div class="chart-box">
-                <h4>Inclusion vs. Exclusion</h4>
-                <canvas id="task2SplitChart"></canvas>
+              <div class="chart-panel">
+                <h4 class="chart-title">Inclusion vs Exclusion Classification Metrics</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task2SplitChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Subtab 2: Task 3 -->
+          <!-- Task 3 Subtab -->
           <div id="sub-task3" class="subtab-panel">
-            <div class="dashboard-grid">
-              <div class="chart-box">
-                <h4>Throughput (tok/s)</h4>
-                <canvas id="task3ThroughputChart"></canvas>
+            <div class="charts-2col">
+              <div class="chart-panel">
+                <h4 class="chart-title">Decoding Throughput (tokens/sec)</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task3ThroughputChart"></canvas>
+                </div>
               </div>
-              <div class="chart-box">
-                <h4>Peak GPU Memory (MB)</h4>
-                <canvas id="task3MemoryChart"></canvas>
+              <div class="chart-panel">
+                <h4 class="chart-title">Peak GPU Memory Footprint (MB)</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task3MemoryChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Subtab 3: Task 4 -->
+          <!-- Task 4 Subtab -->
           <div id="sub-task4" class="subtab-panel">
-            <div class="dashboard-grid">
-              <div class="chart-box">
-                <h4>Peak Attention Memory (MB)</h4>
-                <canvas id="task4MemoryChart"></canvas>
+            <div class="charts-2col">
+              <div class="chart-panel">
+                <h4 class="chart-title">Peak Attention Memory Wall (MB) vs Sequence Length</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task4MemoryChart"></canvas>
+                </div>
               </div>
-              <div class="chart-box">
-                <h4>Attention Latency (ms)</h4>
-                <canvas id="task4LatencyChart"></canvas>
+              <div class="chart-panel">
+                <h4 class="chart-title">Attention Execution Latency (ms)</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task4LatencyChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Subtab 4: Task 5 -->
+          <!-- Task 5 Subtab -->
           <div id="sub-task5" class="subtab-panel">
-            <div class="dashboard-grid">
-              <div class="chart-box">
-                <h4>Speedup vs. Lookahead (&gamma;)</h4>
-                <canvas id="task5SpeedupChart"></canvas>
+            <div class="charts-2col">
+              <div class="chart-panel">
+                <h4 class="chart-title">Speculative Speedup Factor across &gamma;</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task5SpeedupChart"></canvas>
+                </div>
               </div>
-              <div class="chart-box">
-                <h4>Acceptance Rate (&alpha;)</h4>
-                <canvas id="task5AlphaChart"></canvas>
+              <div class="chart-panel">
+                <h4 class="chart-title">Draft Acceptance Rate (&alpha; %)</h4>
+                <div class="canvas-wrapper">
+                  <canvas id="task5AlphaChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -500,7 +567,10 @@
   </main>
 
   <footer class="app-footer">
-    <span>TrialMatch AI &bull; Clinical Screening & Inference Benchmarks &bull; Research Prototype</span>
+    <div class="footer-inner">
+      <span>TrialMatch AI &bull; Clinical Trial Eligibility Screening & Benchmarking System</span>
+      <span class="footer-sub">Academic Engineering & Research Prototype &bull; Not for Clinical Diagnostics</span>
+    </div>
   </footer>
 
   <script src="/static/app.js"></script>

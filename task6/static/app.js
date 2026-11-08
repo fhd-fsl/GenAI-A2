@@ -168,16 +168,16 @@ function addCriterionRow(id, type, text, goldElig = "", goldSent = "") {
 
   div.innerHTML = `
     <div class="crit-header-row">
-      <input type="text" class="form-select crit-id-input" value="${id}" placeholder="ID">
-      <select class="form-select crit-type-select">
+      <input type="text" class="ui-select crit-id-input" value="${id}" placeholder="Criterion ID">
+      <select class="ui-select crit-type-select">
         <option value="inclusion" ${type === "inclusion" ? "selected" : ""}>Inclusion</option>
         <option value="exclusion" ${type === "exclusion" ? "selected" : ""}>Exclusion</option>
       </select>
-      <button class="btn-delete-crit" title="Remove">
+      <button class="btn-delete-crit" title="Remove criterion">
         <i data-lucide="trash-2"></i>
       </button>
     </div>
-    <input type="text" class="form-textarea crit-text-input" value="${text}" placeholder="Criterion statement...">
+    <textarea class="ui-textarea crit-text-input" rows="2" placeholder="Criterion statement...">${text}</textarea>
   `;
 
   div.querySelector(".btn-delete-crit").addEventListener("click", () => {
@@ -335,6 +335,11 @@ function renderScreeningResults(data) {
   vCard.className = `verdict-banner ${verdict.status_color}`;
   vCard.style.display = "flex";
 
+  const statusPill = document.getElementById("verdictStatusPill");
+  if (statusPill) {
+    statusPill.textContent = verdict.status_color === "success" ? "Eligible" : verdict.status_color === "danger" ? "Ineligible" : "Missing Info";
+  }
+
   const iconEl = document.getElementById("verdictIcon");
   if (verdict.status_color === "danger") {
     iconEl.innerHTML = '<i data-lucide="x-circle"></i>';
@@ -350,12 +355,12 @@ function renderScreeningResults(data) {
 
   const vStats = document.getElementById("verdictStats");
   vStats.innerHTML = `
-    <span class="stat-pill ${verdict.counts.included > 0 ? "pill-success" : ""}">Included: <strong>${verdict.counts.included}</strong></span>
-    <span class="stat-pill ${verdict.counts.not_included > 0 ? "pill-danger" : ""}">Not Included: <strong>${verdict.counts.not_included}</strong></span>
-    <span class="stat-pill ${verdict.counts.not_excluded > 0 ? "pill-success" : ""}">Not Excluded: <strong>${verdict.counts.not_excluded}</strong></span>
-    <span class="stat-pill ${verdict.counts.excluded > 0 ? "pill-danger" : ""}">Excluded: <strong>${verdict.counts.excluded}</strong></span>
-    <span class="stat-pill ${verdict.counts.not_enough_info > 0 ? "pill-warning" : ""}">Missing Info: <strong>${verdict.counts.not_enough_info}</strong></span>
-    <span class="stat-pill">N/A: <strong>${verdict.counts.not_applicable}</strong></span>
+    <span class="v-count-badge ${verdict.counts.included > 0 ? "has-success" : ""}">Included: <strong>${verdict.counts.included}</strong></span>
+    <span class="v-count-badge ${verdict.counts.not_included > 0 ? "has-danger" : ""}">Not Included: <strong>${verdict.counts.not_included}</strong></span>
+    <span class="v-count-badge ${verdict.counts.not_excluded > 0 ? "has-success" : ""}">Not Excluded: <strong>${verdict.counts.not_excluded}</strong></span>
+    <span class="v-count-badge ${verdict.counts.excluded > 0 ? "has-danger" : ""}">Excluded: <strong>${verdict.counts.excluded}</strong></span>
+    <span class="v-count-badge ${verdict.counts.not_enough_info > 0 ? "has-warning" : ""}">Missing Info: <strong>${verdict.counts.not_enough_info}</strong></span>
+    <span class="v-count-badge">N/A: <strong>${verdict.counts.not_applicable}</strong></span>
   `;
 
   // Toolbar counts
@@ -371,7 +376,7 @@ function renderScreeningResults(data) {
 
   data.criteria_results.forEach((c) => {
     const card = document.createElement("div");
-    card.className = "result-row-card decision-card";
+    card.className = "decision-card";
     card.dataset.type = c.criterion_type;
     card.dataset.prediction = c.prediction;
 
@@ -388,46 +393,48 @@ function renderScreeningResults(data) {
     let evidenceTagsHtml = "";
     if (c.evidence_sentence_ids && c.evidence_sentence_ids.length > 0) {
       c.evidence_sentence_ids.forEach((sid) => {
-        evidenceTagsHtml += `<span class="ev-tag" onclick="highlightSentence(${sid})">Sentence [${sid}]</span>`;
+        evidenceTagsHtml += `<span class="ev-pill" onclick="highlightSentence(${sid})">Sentence [${sid}]</span>`;
       });
     } else {
-      evidenceTagsHtml = '<span style="color: var(--text-muted); font-size: 11px;">None Cited</span>';
+      evidenceTagsHtml = '<span class="evidence-empty-note">None Cited in Clinical Record</span>';
     }
 
     let evidenceQuotesHtml = "";
     if (c.evidence_text && c.evidence_text.length > 0) {
-      evidenceQuotesHtml = `<div style="font-style: italic; color: var(--text-secondary); margin-top: 2px;">"${c.evidence_text.join('" "')}"</div>`;
+      evidenceQuotesHtml = `<div class="evidence-quotes-block">"${c.evidence_text.join('" "')}"</div>`;
     }
 
     card.innerHTML = `
-      <div class="result-row-header">
-        <div class="result-title-group">
-          <span class="badge-id">${c.criterion_id}</span>
-          <span class="badge-type ${c.criterion_type === "inclusion" ? "inc" : "exc"}">${c.criterion_type}</span>
+      <div class="decision-header">
+        <div class="badge-cluster">
+          <span class="id-badge">${c.criterion_id}</span>
+          <span class="type-pill ${c.criterion_type}">${c.criterion_type}</span>
         </div>
-        <span class="badge-pred ${pClass}">${c.prediction}</span>
+        <span class="prediction-pill ${pClass}">${c.prediction}</span>
       </div>
-      <div class="criterion-text-display">${c.criterion_text}</div>
-      <div class="evidence-box">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <strong>Evidence:</strong>
-          <div class="evidence-tags">${evidenceTagsHtml}</div>
+      <div class="criterion-body-text">${c.criterion_text}</div>
+      <div class="evidence-section">
+        <div class="evidence-header-row">
+          <span class="evidence-label">Verbatim Evidence Citations</span>
+          <div class="evidence-tags-list">${evidenceTagsHtml}</div>
         </div>
         ${evidenceQuotesHtml}
       </div>
-      <div style="font-size: 11px; color: var(--text-secondary);"><strong>Justification:</strong> ${c.explanation}</div>
-      <div class="result-footer-row">
-        <span>${c.gold_eligibility ? `Gold: <strong>${c.gold_eligibility}</strong>` : ""}</span>
-        <span>${c.latency_ms} ms (${c.tokens_per_sec} tok/s)</span>
+      <div class="explanation-block">
+        <strong>Justification:</strong> ${c.explanation}
+      </div>
+      <div class="decision-footer">
+        <span class="gold-gt">${c.gold_eligibility ? `Gold Reference: <strong>${c.gold_eligibility}</strong>` : ""}</span>
+        <span>Inference: <strong>${c.latency_ms} ms</strong> (${c.tokens_per_sec} tok/s)</span>
       </div>
     `;
 
     container.appendChild(card);
   });
 
-  // Telemetry Bar
+  // Telemetry Strip
   const telem = data.telemetry;
-  document.getElementById("screeningTelemetryCard").style.display = "flex";
+  document.getElementById("screeningTelemetryCard").style.display = "grid";
   document.getElementById("telemetryModeBadge").textContent = data.decoding_mode.toUpperCase();
   document.getElementById("telemTime").textContent = `${telem.total_time_ms} ms`;
   document.getElementById("telemTokens").textContent = telem.total_tokens_generated;
