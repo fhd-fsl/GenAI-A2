@@ -106,7 +106,16 @@ def load_draft_and_target_models(
         trust_remote_code=True,
     )
 
-    if adapter_path and Path(adapter_path).exists():
+    weights_file_exists = (
+        adapter_path
+        and Path(adapter_path).is_dir()
+        and (
+            (Path(adapter_path) / "adapter_model.safetensors").exists()
+            or (Path(adapter_path) / "adapter_model.bin").exists()
+        )
+    )
+
+    if weights_file_exists:
         print(f"    Attaching LoRA fine-tuned adapter from {adapter_path}...", flush=True)
         target_model = PeftModel.from_pretrained(
             target_model,
@@ -115,6 +124,13 @@ def load_draft_and_target_models(
             device_map={"": device} if device == "cuda" else None,
         )
         print("    [OK] LoRA adapter attached to Target Model!", flush=True)
+    else:
+        print(
+            f"    [INFO] LoRA adapter weights (adapter_model.safetensors) not found in '{adapter_path}'.\n"
+            f"           Running Target Model as base '{target_model_id}'.\n"
+            f"           (To enable fine-tuned clinical predictions, download weights from the Google Drive link in task1/outputs/adapter/README.md).",
+            flush=True,
+        )
 
     target_model.eval()
 

@@ -429,7 +429,24 @@ def load_model_for_task3(
             trust_remote_code=True,
         )
 
-    model = PeftModel.from_pretrained(base, adapter_path)
+    weights_file_exists = (
+        adapter_path
+        and Path(adapter_path).is_dir()
+        and (
+            (Path(adapter_path) / "adapter_model.safetensors").exists()
+            or (Path(adapter_path) / "adapter_model.bin").exists()
+        )
+    )
+
+    if weights_file_exists:
+        model = PeftModel.from_pretrained(base, adapter_path)
+        print(f"    [OK] LoRA adapter attached from {adapter_path}!")
+    else:
+        print(
+            f"    [INFO] LoRA adapter weights not found in '{adapter_path}'.\n"
+            f"           Running base model '{base_model}' for KV cache benchmarks."
+        )
+        model = base
     model.eval()
 
     if device == "cuda":

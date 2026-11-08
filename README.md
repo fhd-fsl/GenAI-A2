@@ -1,168 +1,182 @@
-# GenAI Assignment 2 — Clinical Trial Eligibility Screening
+# TrialMatch: Parameter-Efficient Clinical Trial Screening & Efficient Transformer Inference
 
-Implementation of a Transformer-based system for matching patient descriptions to clinical trial inclusion/exclusion criteria with evidence-based justifications.
+> **Generative AI Assignment #2**  
+> **Author:** Fahad Bin Faisal (Roll No. 23i-0614)  
+> **Department of Computer Science**, FAST-NUCES, Islamabad  
+> **Email:** `i230614@isb.nu.edu.pk`  
+> **Hardware:** NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)
 
-## Overview
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Report PDF](https://img.shields.io/badge/Technical_Report-IEEE_PDF-red.svg)](report/GenAI_Assignment2_Report.pdf)
+[![Video Walkthrough](https://img.shields.io/badge/Demo_Video-YouTube-red.svg)](https://youtu.be/HCHado1Rx9s)
 
-This project implements the complete pipeline from **Task 1** through **Task 6** of the Generative AI Assignment #2:
+---
 
-- **Task 1**: Research, model selection, and QLoRA fine-tuning on TrialGPT Criterion Annotations
-- **Task 2**: Criterion-level eligibility prediction + evidence sentence retrieval
-- **Task 3**: KV-cached autoregressive generation with correctness benchmarks
-- **Task 4**: Tiled attention with online softmax implementation
-- **Task 5**: Speculative decoding with draft model
-- **Task 6**: Browser-based screening application
+## 📌 Submission Deliverables & Links
 
-## Hardware
+| Deliverable | Location / URL | Description |
+| :--- | :--- | :--- |
+| **Technical Report** | [`report/GenAI_Assignment2_Report.pdf`](report/GenAI_Assignment2_Report.pdf) | 9-page IEEE conference paper with complete theory, benchmarks, and appendices. |
+| **Video Demonstration** | [YouTube Video (5--7 min)](https://youtu.be/HCHado1Rx9s) | End-to-end screencast walking through the UI, decoding lab, and benchmarks. |
+| **GitHub Repository** | [github.com/fhd-fsl/GenAI-A2](https://github.com/fhd-fsl/GenAI-A2) | Complete open-source codebase with automated test suites and reproducible scripts. |
+| **Adapter Weights** | [Google Drive Folder](https://drive.google.com/drive/folders/1YEafpplZJwsxZx9rfEQxkuEPuCg8xUrp?usp=sharing) | Pre-trained QLoRA weights (`adapter_model.safetensors`, 479 MB). |
+| **One-Click App Launcher** | [`run_app.bat`](run_app.bat) | Windows batch file to launch the local web server and open the browser. |
 
-- **GPU**: NVIDIA RTX 4050 (6 GB VRAM)
-- **Quantization**: 4-bit (Q4_K_M / NF4) for inference and QLoRA training
+---
 
-## Model Selection
+## ⚡ Quick-Start: Running on a Fresh Clone
 
-| Component | Model | Parameters | Quantization | VRAM (est.) |
-|-----------|-------|------------|--------------|-------------|
-| **Target** | Qwen3-4B-Instruct | 4.02B | Q4_K_M | ~2.7 GB |
-| **Draft** | Qwen3-0.6B | 0.6B | Q4_K_M | ~0.3 GB |
-| **Fine-tuning** | QLoRA (NF4, r=128) | — | 4-bit base + FP16 adapters | ~3.8–4.2 GB |
+If someone clones this repository from scratch on a clean machine without any prior weights or local data, follow these 3 simple steps:
 
-Both models share the **identical Qwen3 tokenizer** — enabling zero-overhead speculative decoding.
-
-## Dataset
-
-- **Source**: `ncbi/TrialGPT-Criterion-Annotations` (Hugging Face)
-- **Size**: 1,015 criterion-level annotations across 53 patients
-- **Split**: Patient-grouped, seed 42 → **37 train / 8 val / 8 test**
-- **Labels**: 6 expert categories (included, not included, not excluded, excluded, not enough information, not applicable)
-- **Evidence**: Expert-annotated sentence indices from patient notes
-
-## Quick Start
-
+### 1. Clone & Install Dependencies
 ```bash
-# Install dependencies (uv)
-uv sync
+git clone https://github.com/fhd-fsl/GenAI-A2.git
+cd GenAI-A2
 
-# Download & preprocess dataset
-uv run python data/download_dataset.py
-uv run python data/preprocess.py
-
-# Verify splits
-uv run python data/dataset_interface.py
+# Install dependencies using pip (or 'uv sync' if using uv)
+pip install -r requirements.txt
 ```
 
-## Project Structure
+### 2. LoRA Adapter Weights (One-Click or Base Fallback)
+The LoRA weights (`adapter_model.safetensors`, 479 MB) are hosted on Google Drive to adhere to GitHub's file-size ceiling.
+* **Option A (Download Weights)**:
+  ```bash
+  python download_adapter_weights.py
+  ```
+  *(Or download directly from [Google Drive](https://drive.google.com/drive/folders/1YEafpplZJwsxZx9rfEQxkuEPuCg8xUrp?usp=sharing) and place inside `task1/outputs/adapter/`).*
+* **Option B (Zero-Download Base Fallback)**:
+  If the adapter weights file is not present, all scripts and the web application **automatically fall back to running the base model (`Qwen/Qwen2.5-3B-Instruct`)**. Tasks 3 (KV Cache), Task 4 (Attention), Task 5 (Speculative Decoding), and Task 6 (Web App) run without crashing!
 
-```
-GenAI A2/
-├── .venv/                      # uv virtual environment (gitignored)
-├── data/
-│   ├── download_dataset.py     # Download from HF Hub
-│   ├── preprocess.py           # Column removal + 37/8/8 split + manifest
-│   ├── dataset_interface.py    # Clean split accessor for tasks
-│   ├── raw/                    # Raw dataset cache
-│   └── processed/              # Processed splits + split_manifest.json
-├── task1/
-│   ├── research/
-│   │   ├── Literature review.md
-│   │   └── Model selection.md
-│   ├── preprocessing/
-│   │   └── tokenizer.py        # Tokenization & data prep (used by train.py)
-│   ├── training/
-│   │   ├── __init__.py
-│   │   ├── config.yaml         # All hyperparameters (single source of truth)
-│   │   ├── requirements.txt    # Exact Colab environment
-│   │   ├── train.py            # QLoRA fine-tuning (reproducible)
-│   │   └── fine_tune.ipynb     # Original Colab notebook
-│   ├── eval/
-│   │   ├── __init__.py
-│   │   ├── metrics.py          # Shared metrics (classification + evidence)
-│   │   └── eval.py             # Evaluation script
-│   └── outputs/
-│       ├── adapter/            # LoRA adapter (configs tracked, weights on Google Drive)
-│       ├── train/              # Training artifacts
-│       │   ├── split_manifest.json
-│       │   └── training_log.json
-│       └── eval/               # Evaluation results
-│           ├── README.md       # Results summary
-│           └── test_predictions.json
-├── task2/                      # Eligibility + evidence (TODO)
-├── task3/                      # KV cache benchmarks (TODO)
-├── task4/                      # Tiled attention (TODO)
-├── task5/                      # Speculative decoding (TODO)
-├── task6/                      # Browser app (TODO)
-├── pyproject.toml
-├── uv.lock
-└── .gitignore
-```
-
-## Task 1: QLoRA Fine-tuning & Evaluation
-
-### Reproducible Training
+### 3. Launch the Web Application
 ```bash
-# 1. Install environment (from Colab)
-pip install -r task1/training/requirements.txt
+# Windows double-click:
+run_app.bat
 
-# 2. Prepare tokenized data (uses task1/preprocessing/tokenizer.py)
-uv run python task1/preprocessing/tokenizer.py
-
-# 3. Train (reads config from task1/training/config.yaml)
-uv run python task1/training/train.py
+# Or terminal:
+python task6/app.py
 ```
-Outputs: `task1/outputs/adapter/adapter_model.safetensors`, `adapter_config.json`, `training_log.json` in `task1/outputs/train/`
+Open your browser at **`http://127.0.0.1:8000`**. The workstation will load with built-in preset clinical vignettes, live inference, and diagnostic telemetry!
 
-### Evaluation
-```bash
-# Evaluate on test set (requires adapter from training or HF Hub)
-uv run python task1/eval/eval.py \
-  --adapter-path task1/outputs/adapter \
-  --split test \
-  --output-dir results/task1/eval
+---
+
+## 🏗️ Architecture & Model Selection
+
+* **Target Model:** `Qwen/Qwen2.5-3B-Instruct` (3.09B parameters)
+  * **Quantization:** 4-bit NormalFloat (NF4) via `bitsandbytes` (~3.49 GB VRAM).
+  * **Grouped-Query Attention (GQA):** 16 query heads : 2 KV heads ($8:1$ ratio), reducing KV cache to $36.0\text{ KB/token}$.
+  * **Context Window:** 131,072 tokens with RoPE positional embeddings.
+  * **License:** Apache 2.0 (permissive commercial and academic deployment).
+* **Draft Model (Task 5):** `Qwen/Qwen2.5-0.5B-Instruct` (0.49B parameters)
+  * **Precision:** Native FP16 (~0.98 GB VRAM).
+  * **Vocabulary:** 151,665 tokens (**100% identical tokenizer** to Target Model, zero-overhead mapping).
+* **Dual-Model Shared Footprint:** ~4.47 GB static VRAM, operating comfortably within a single 6.0 GB laptop GPU.
+
+---
+
+## 🔬 Tasks Overview & Verification Suite
+
+Every task includes automated correctness verification and benchmarking suites:
+
+### Task 1: QLoRA Fine-Tuning
+- **Dataset:** `ncbi/TrialGPT-Criterion-Annotations` (1,015 criteria across 53 patients).
+- **Leakage Prevention:** Fixed patient-grouped split (**37 train / 8 val / 8 test**) via `task1/outputs/train/split_manifest.json`.
+- **QLoRA Config:** Rank $r=128$, $\alpha=256$, all 7 projections (`q, k, v, o, gate, up, down`), trained for 3 epochs.
+- **Reproduce Data Preparation:**
+  ```bash
+  python data/download_dataset.py
+  python data/preprocess.py
+  ```
+
+### Task 2: Verification, Evidence Retrieval & Error Taxonomy
+- Evaluates 6-class eligibility classification on held-out test split ($n=206$).
+- Sentence-level evidence extraction evaluated via strict 4-case null set policy.
+- **Run Evaluation:**
+  ```bash
+  python task2/eval_task2.py --adapter-path task1/outputs/adapter
+  ```
+- **Results:** **73.30% Accuracy**, **0.5402 Macro-F1**, **0.8260 Evidence Macro-F1** (vs. 22.82% base model).
+
+### Task 3: Explicit Low-Level KV-Cache Engine
+- Implemented `ExplicitKVCache` in [`task3/kv_cache.py`](task3/kv_cache.py) with explicit RoPE offsets and prefill/decode separation.
+- **Verify 100% Token Equivalence:**
+  ```bash
+  python task3/test_correctness.py
+  ```
+- **Run KV Benchmarks:**
+  ```bash
+  python task3/benchmark_kv.py
+  ```
+- **Results:** **$2.56\times$ speedup** on long clinical vignettes ($7.40\text{ tok/s}$ vs. $2.89\text{ tok/s}$), $108.93\text{ MB}$ saved, **100.00% exact token match**.
+
+### Task 4: Tiled Online-Softmax Attention
+- Implemented blockwise online normalizer attention in [`task4/attention.py`](task4/attention.py) without intermediate $N \times N$ matrix materialization.
+- **Verify Numerical Precision:**
+  ```bash
+  python task4/test_attention.py
+  ```
+- **Run Scaling Benchmarks:**
+  ```bash
+  python task4/attention_benchmark.py
+  ```
+- **Results:** Peak memory reduced by **$95.0\%$** at $N=4096$ ($40.95\text{ MB}$ vs $824.27\text{ MB}$ SDPA), with maximum error $L_\infty \le 1.95 \times 10^{-3}$.
+
+### Task 5: Speculative Decoding Engine
+- Implemented greedy speculative drafting and parallel target verification in [`task5/speculative_decoding.py`](task5/speculative_decoding.py) with exact KV cache state rollback.
+- **Verify Exact Output Equivalence (18 configurations):**
+  ```bash
+  python task5/test_speculative.py
+  ```
+- **Run Speculative Benchmarks:**
+  ```bash
+  python task5/benchmark_speculative.py
+  ```
+- **Results:** Up to **$1.75\times$ speedup** and $75.0\%$ forward passes saved on structured JSON schemas, alongside empirical documentation of the **$0.92\times$ slowdown** on high-entropy prose.
+
+### Task 6: Unified Clinical Web Application
+- Standalone single-page clinical decision support dashboard developed with `aiohttp`, vanilla JavaScript, and modern clinical styling.
+- Features: Bidirectional sentence-level evidence highlights, 3 explicit aggregation rules (`POTENTIALLY_ELIGIBLE`, `UNCERTAIN_MISSING_INFO`, `INELIGIBLE`), live decoding comparisons, and printable PDF audit reports.
+- **Verify Backend & API Endpoints:**
+  ```bash
+  python task6/test_app.py
+  ```
+
+---
+
+## 📊 Summary of Empirical Results
+
+| Metric / Dimension | Baseline (Unoptimized / Zero-Shot) | TrialMatch Optimized System | Empirical Gain |
+| :--- | :---: | :---: | :---: |
+| **Classification Accuracy** | $22.82\%$ | **$73.30\%$** | **$+50.48\text{ pp}$** |
+| **Macro-Averaged F1** | $0.1365$ | **$0.5402$** | **$+0.4037$** |
+| **Evidence Retrieval Macro-F1** | $0.7011$ | **$0.8260$** | **$+0.1249$** |
+| **JSON Schema Adherence** | $0.0\%$ | **$100.0\%$** | **$+100.0\text{ pp}$** |
+| **KV Cache Autoregressive Speed** | $2.89\text{ tok/s}$ | **$7.40\text{ tok/s}$** | **$2.56\times$ Speedup** |
+| **KV Cache Token Equivalence** | Reference | $675 / 675$ | **$100.00\%$ Match** |
+| **Attention Memory Footprint ($N=4096$)** | $824.27\text{ MB}$ | **$40.95\text{ MB}$** | **$95.0\%$ Reduction** |
+| **Speculative Speedup (JSON Schema)** | $7.80\text{ tok/s}$ ($\gamma=0$) | **$13.69\text{ tok/s}$** ($\gamma=5$) | **$1.75\times$ Speedup** |
+| **Speculative Passes Saved** | $0\%$ | **$75.0\%$** | **$-75\%$ Compute** |
+
+---
+
+## 📑 Recompiling the Technical Report
+
+The report source is located in [`report/`](report/) and adheres strictly to IEEE conference formatting. To recompile the PDF:
+
+```powershell
+.\report\compile_report.bat
 ```
-Outputs: `test_predictions.json`, `test_metrics.json` with accuracy, macro-F1, per-class P/R/F1, confusion matrix, evidence micro-F1.
+*(Executes automated passes: `pdflatex` $\to$ `bibtex` $\to$ `pdflatex` $\times 2$, producing `report/GenAI_Assignment2_Report.pdf` with 0 overfull hboxes).*
 
-### Configuration
-All hyperparameters in `task1/training/config.yaml`:
-- **Model**: Qwen2.5-3B-Instruct, 2048 seq len
-- **QLoRA**: 4-bit NF4, r=128, alpha=256, dropout=0.05
-- **Target modules**: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
-- **Training**: 3 epochs, batch=1, grad_accum=16, LR=5e-5, cosine, warmup=50
-- **Data**: Patient-grouped 37/8/8 split (seed 42), 6 eligibility labels preserved
+---
 
-### Results (Test Set)
-| Metric | Value |
-|--------|-------|
-| **Accuracy** | **0.7330** |
-| **Macro F1** | **0.4501** |
-| **Evidence F1 (micro)** | **0.5871** |
-| Inclusion Accuracy | 0.7333 |
-| Exclusion Accuracy | 0.7328 |
-| Trainable params | ~239M (7.2%) |
-| Adapter size | 0.48 GB |
+## ⚠️ Educational & Research Disclaimer
 
-**Adapter Download**: [Google Drive](https://drive.google.com/drive/folders/1YEafpplZJwsxZx9rfEQxkuEPuCg8xUrp?usp=sharing) (folder contains `adapter_model.safetensors`, `adapter_config.json`, tokenizer files, `test_predictions.json`)
+**TrialMatch is an educational and academic research screening prototype.** It is designed to assist clinical research coordinators in pre-screening patient records against trial eligibility protocols. It does **not** provide clinical diagnoses, medical advice, or official patient enrollment authorizations. All predictions must be reviewed by qualified medical personnel.
 
-**Training Note**: Validation loss increased across 3 epochs (1.31 → 1.77), indicating overfitting on small dataset (37 patients, 603 annotations). Best validation loss at epoch 1.
+---
 
-Full metrics in `task1/outputs/eval/README.md` and `test_predictions.json`.
+## 📜 License
 
-## Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| **Qwen3-4B + Qwen3-0.6B** | Identical tokenizer; both fit on 6 GB GPU simultaneously; Apache 2.0 |
-| **QLoRA (r=128)** | Only method fitting 6 GB; matches LoRA within 2–4 pp on clinical IE (Yim 2024; Estupiñán-Ojeda 2025) |
-| **Patient-grouped split** | Prevents leakage; matches assignment spec (seed 42, 37/8/8) |
-| **4-class eligibility** | Preserves all expert categories — no binary collapse |
-| **Evidence sentence IDs** | Direct span extraction from numbered patient note sentences |
-
-## References
-
-- **TrialGPT**: Jin et al., *Nature Communications* (2024) — base framework
-- **QLoRA clinical IE**: Yim et al., medRxiv (2024); Estupiñán-Ojeda et al., JAMIA Open (2025)
-- **Small model medical reasoning**: Subaharan (2025); Hariprasad (2026); MedMobile (2024)
-- **FlashAttention**: Dao et al., NeurIPS (2022/2023)
-- **Speculative Decoding**: Leviathan et al., ICML (2023)
-
-## License
-
-Apache 2.0 (model weights); MIT (code) — see individual model licenses.
+- **Code:** [MIT License](LICENSE)
+- **Model Weights:** [Apache 2.0 License](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)

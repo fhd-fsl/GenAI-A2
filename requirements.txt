@@ -1,0 +1,21 @@
+# Core PyTorch and HuggingFace Transformer stack
+torch>=2.4.0
+transformers>=4.46.0
+accelerate>=1.0.0
+peft>=0.12.0
+bitsandbytes>=0.43.0
+datasets>=3.0.0
+huggingface-hub>=0.25.0
+
+# Scientific computing and evaluation
+scikit-learn>=1.4.0
+numpy>=1.26.0
+matplotlib>=3.8.0
+
+# Task 6 Web Server
+aiohttp>=3.9.0
+
+# Utilities
+jinja2>=3.1.0
+tqdm>=4.66.0
+pyyaml>=6.0.0

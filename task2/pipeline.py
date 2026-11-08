@@ -65,10 +65,27 @@ class EligibilityPipeline:
             trust_remote_code=True,
         )
 
-        self.model = PeftModel.from_pretrained(base, str(self.adapter_path))
-        self.model.eval()
+        weights_file_exists = (
+            self.adapter_path.is_dir()
+            and (
+                (self.adapter_path / "adapter_model.safetensors").exists()
+                or (self.adapter_path / "adapter_model.bin").exists()
+            )
+        )
 
-        self.tokenizer = AutoTokenizer.from_pretrained(str(self.adapter_path), use_fast=True)
+        if weights_file_exists:
+            self.model = PeftModel.from_pretrained(base, str(self.adapter_path))
+            self.tokenizer = AutoTokenizer.from_pretrained(str(self.adapter_path), use_fast=True)
+        else:
+            print(
+                f"[INFO] LoRA weights not found in '{self.adapter_path}'.\n"
+                f"       Falling back to base model '{self.base_model}'.\n"
+                f"       (Download fine-tuned adapter weights from Google Drive for full clinical accuracy)."
+            )
+            self.model = base
+            self.tokenizer = AutoTokenizer.from_pretrained(self.base_model, use_fast=True)
+
+        self.model.eval()
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "left"
 
