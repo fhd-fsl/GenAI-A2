@@ -3,40 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clinical Trial Eligibility Screening & Inference Benchmarks</title>
+  <title>TrialMatch — Clinical Screening & Inference Benchmarks</title>
   <link rel="stylesheet" href="/static/styles.css">
   <!-- Chart.js for interactive benchmark visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-  <!-- Persistent Educational Prototype Notice Banner -->
-  <header class="prototype-banner">
-    <div class="banner-content">
-      <span class="badge-notice">EDUCATIONAL PROTOTYPE ONLY</span>
-      <p class="banner-text">
-        <strong>Important Notice:</strong> This clinical trial eligibility matching system is an academic research and engineering screening prototype developed for Generative AI coursework. It does <strong>not</strong> provide medical diagnoses, treatment advice, or official clinical trial enrollment determinations.
-      </p>
-    </div>
-    <div class="hardware-pill" id="hardwareStatusPill">
-      <span class="pulse-dot"></span>
-      <span id="hardwareText">Connecting to GPU...</span>
-    </div>
-  </header>
-
-  <!-- Navigation Tabs -->
+  <!-- Top Navigation Header -->
   <nav class="main-nav">
-    <div class="nav-brand">
-      <div class="logo-icon">&#9877;</div>
-      <div>
-        <h1 class="brand-title">TrialMatch AI</h1>
-        <span class="brand-subtitle">Fine-Tuned Qwen2.5-3B &bull; KV-Cached &bull; Tiled Attention &bull; Speculative Decoding</span>
+    <div class="nav-left">
+      <div class="brand">
+        <i data-lucide="activity" class="brand-icon"></i>
+        <span class="brand-title">TrialMatch</span>
+        <span class="model-badge">Qwen 2.5-3B + LoRA</span>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="tab-screener">
+          <i data-lucide="clipboard-check"></i>
+          <span>Screening</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-decoding">
+          <i data-lucide="cpu"></i>
+          <span>Decoding Lab</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-attention">
+          <i data-lucide="bar-chart-2"></i>
+          <span>Attention & Benchmarks</span>
+        </button>
       </div>
     </div>
-    <div class="nav-tabs">
-      <button class="tab-btn active" data-tab="tab-screener">1. Patient Eligibility Screener</button>
-      <button class="tab-btn" data-tab="tab-decoding">2. Live Decoding Comparison Lab</button>
-      <button class="tab-btn" data-tab="tab-attention">3. Tiled Attention & Benchmarks</button>
+    <div class="nav-right">
+      <div class="hardware-pill" id="hardwareStatusPill">
+        <span class="pulse-dot"></span>
+        <span id="hardwareText">Connecting...</span>
+      </div>
     </div>
   </nav>
 
@@ -49,83 +52,83 @@
     <section id="tab-screener" class="tab-panel active">
       <div class="screener-grid">
         
-        <!-- Left Column: Inputs & Patient Record -->
-        <div class="screener-sidebar">
+        <!-- Left Column: Inputs Workbench -->
+        <aside class="screener-sidebar">
           
-          <!-- Preset Selector -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h3>Load Preset Clinical Case</h3>
-              <button class="btn-sm btn-ghost" id="btnClearInputs">Clear / Custom Note</button>
+          <!-- Preset Selector Bar -->
+          <div class="workbench-section">
+            <div class="section-row">
+              <label class="control-label" for="presetCaseSelect">Case Preset</label>
+              <button class="btn-text" id="btnClearInputs" title="Clear note and criteria">
+                <i data-lucide="rotate-ccw"></i> Reset
+              </button>
             </div>
             <select id="presetCaseSelect" class="form-select">
-              <option value="">-- Choose a Clinical Case (Held-Out Test or Unseen) --</option>
+              <option value="">Select a test or unseen clinical case...</option>
             </select>
             <div class="preset-meta" id="presetMeta" style="display: none;">
-              <span class="meta-item"><strong>Patient:</strong> <span id="metaPatientId">-</span></span>
-              <span class="meta-item"><strong>Trial:</strong> <span id="metaTrialId">-</span></span>
+              <span class="meta-tag">Pt: <strong id="metaPatientId">-</strong></span>
+              <span class="meta-tag">Trial: <strong id="metaTrialId">-</strong></span>
             </div>
           </div>
 
           <!-- Patient Record Editor -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h3>Patient Clinical Description</h3>
-              <span class="info-badge" title="Sentences are automatically indexed (0..N) for exact evidence citations">Sentence-Indexed</span>
+          <div class="workbench-section">
+            <div class="section-row">
+              <label class="control-label" for="patientNoteInput">Patient Clinical Note</label>
+              <button class="btn-text" id="btnToggleSentenceView">
+                <i data-lucide="list-ordered"></i> Sentences (<span id="sentenceCountBadge">0</span>)
+              </button>
             </div>
-            <textarea id="patientNoteInput" class="form-textarea" rows="9" placeholder="Paste unstructured patient notes or structured history here... Sentences will be automatically parsed and numbered."></textarea>
-            <div class="note-viewer-toggle">
-              <button class="btn-xs btn-outline" id="btnToggleSentenceView">Inspect Sentence Breakdowns (<span id="sentenceCountBadge">0</span> sentences)</button>
-            </div>
+            <textarea id="patientNoteInput" class="form-textarea" rows="8" placeholder="Paste clinical note text..."></textarea>
             <div id="sentenceBreakdownViewer" class="sentence-list" style="display: none;"></div>
           </div>
 
           <!-- Criteria Builder -->
-          <div class="panel-card">
-            <div class="card-header">
-              <h3>Eligibility Criteria to Screen</h3>
-              <button class="btn-sm btn-primary" id="btnAddCriterion">+ Add Criterion</button>
+          <div class="workbench-section criteria-section">
+            <div class="section-row">
+              <label class="control-label">Trial Criteria</label>
+              <button class="btn-sm btn-outline" id="btnAddCriterion">
+                <i data-lucide="plus"></i> Add Criterion
+              </button>
             </div>
             <div id="criteriaListContainer" class="criteria-list"></div>
           </div>
 
-          <!-- Execution Settings -->
-          <div class="panel-card execution-card">
-            <div class="card-header">
-              <h3>Inference Configuration</h3>
-            </div>
-            <div class="form-group">
-              <label>Decoding Mechanism:</label>
-              <select id="decodingModeSelect" class="form-select">
-                <option value="kv_cached" selected>KV-Cached Greedy (Task 3 Engine - Recommended)</option>
-                <option value="speculative">Speculative Decoding (Task 5 Engine - 0.5B Draft)</option>
-                <option value="uncached">Uncached Reference (Task 3 Baseline - Quadratic)</option>
+          <!-- Execution Bar -->
+          <div class="workbench-section execution-bar">
+            <div class="mode-select-row">
+              <label class="control-label">Decoding Mode</label>
+              <select id="decodingModeSelect" class="form-select form-select-sm">
+                <option value="kv_cached" selected>KV-Cached Greedy</option>
+                <option value="speculative">Speculative Decoding (0.5B Draft)</option>
+                <option value="uncached">Uncached Baseline</option>
               </select>
             </div>
-            <div class="form-group" id="gammaControlGroup" style="display: none;">
-              <label>Draft Lookahead Horizon (&gamma;): <span id="gammaValueLabel" class="val-pill">3</span></label>
+            <div class="gamma-row" id="gammaControlGroup" style="display: none;">
+              <span class="control-label">Lookahead (&gamma;): <strong id="gammaValueLabel">3</strong></span>
               <input type="range" id="gammaRange" min="1" max="7" step="2" value="3" class="form-range">
-              <span class="form-hint">Speculative depth: 1, 3, 5, or 7 draft tokens per parallel verify step.</span>
             </div>
-            <button id="btnRunScreening" class="btn-primary btn-large btn-block">
+            <button id="btnRunScreening" class="btn-primary btn-block">
               <span id="screenBtnSpinner" class="spinner" style="display: none;"></span>
-              Run Clinical Eligibility Screening
+              <i data-lucide="play" id="screenBtnIcon"></i>
+              <span>Screen Patient</span>
             </button>
           </div>
 
-        </div>
+        </aside>
 
-        <!-- Right Column: Results & Interactive Evidence -->
-        <div class="screener-main">
+        <!-- Right Column: Results & Evidence -->
+        <section class="screener-main">
           
           <!-- Overall Verdict Card -->
           <div id="overallVerdictCard" class="verdict-banner" style="display: none;">
             <div class="verdict-header">
-              <div class="verdict-icon" id="verdictIcon">&#9679;</div>
-              <div>
-                <h2 class="verdict-title" id="verdictTitle">Screening Complete</h2>
+              <div class="verdict-icon" id="verdictIcon"></div>
+              <div class="verdict-details">
+                <h2 class="verdict-title" id="verdictTitle">-</h2>
                 <p class="verdict-summary" id="verdictSummary">-</p>
-                <p class="verdict-rule" id="verdictRule">-</p>
+                <div class="verdict-rule" id="verdictRule">-</div>
               </div>
             </div>
             <div class="verdict-stats" id="verdictStats"></div>
@@ -134,141 +137,137 @@
           <!-- Filter & Export Toolbar -->
           <div class="results-toolbar" id="resultsToolbar" style="display: none;">
             <div class="filter-group">
-              <span class="filter-label">Filter:</span>
               <button class="pill-filter active" data-filter="all">All (<span id="countAll">0</span>)</button>
               <button class="pill-filter" data-filter="inclusion">Inclusion (<span id="countInc">0</span>)</button>
               <button class="pill-filter" data-filter="exclusion">Exclusion (<span id="countExc">0</span>)</button>
               <button class="pill-filter" data-filter="missing">Missing Info (<span id="countMiss">0</span>)</button>
             </div>
             <div class="export-group">
-              <button class="btn-sm btn-outline" id="btnExportHtml">&#128438; Export Printable Report (HTML / PDF)</button>
-              <button class="btn-sm btn-outline" id="btnExportJson">&#128190; Export Provenance JSON</button>
+              <button class="btn-sm btn-outline" id="btnExportHtml">
+                <i data-lucide="file-text"></i> Export PDF/HTML
+              </button>
+              <button class="btn-sm btn-outline" id="btnExportJson">
+                <i data-lucide="download"></i> JSON
+              </button>
             </div>
           </div>
 
           <!-- Criterion Decisions Container -->
           <div id="criteriaResultsContainer" class="results-container">
             <div class="empty-state">
-              <div class="empty-icon">&#128203;</div>
-              <h3>Ready to Screen</h3>
-              <p>Select a preset patient trial from the left or enter a custom clinical note and criteria, then click <strong>"Run Clinical Eligibility Screening"</strong>.</p>
+              <i data-lucide="clipboard" class="empty-icon"></i>
+              <p>Load a preset or enter patient notes to screen criteria.</p>
             </div>
           </div>
 
-          <!-- Telemetry Footer Card -->
-          <div id="screeningTelemetryCard" class="panel-card telemetry-card" style="display: none;">
-            <div class="card-header">
-              <h4>Inference Telemetry</h4>
-              <span class="badge-mode" id="telemetryModeBadge">KV-Cached</span>
+          <!-- Telemetry Footer Bar -->
+          <div id="screeningTelemetryCard" class="telemetry-bar" style="display: none;">
+            <div class="telemetry-item">
+              <span class="telem-label">Mode:</span>
+              <strong id="telemetryModeBadge">KV-Cached</strong>
             </div>
-            <div class="telemetry-grid">
-              <div class="telem-item">
-                <span class="telem-label">Total Time</span>
-                <span class="telem-value" id="telemTime">-</span>
-              </div>
-              <div class="telem-item">
-                <span class="telem-label">Tokens Generated</span>
-                <span class="telem-value" id="telemTokens">-</span>
-              </div>
-              <div class="telem-item">
-                <span class="telem-label">Throughput</span>
-                <span class="telem-value" id="telemThroughput">-</span>
-              </div>
-              <div class="telem-item">
-                <span class="telem-label">Target Passes Saved</span>
-                <span class="telem-value highlight-green" id="telemPassesSaved">-</span>
-              </div>
-              <div class="telem-item">
-                <span class="telem-label">Peak VRAM</span>
-                <span class="telem-value" id="telemVram">-</span>
-              </div>
+            <div class="telemetry-item">
+              <span class="telem-label">Latency:</span>
+              <strong id="telemTime">-</strong>
+            </div>
+            <div class="telemetry-item">
+              <span class="telem-label">Tokens:</span>
+              <strong id="telemTokens">-</strong>
+            </div>
+            <div class="telemetry-item">
+              <span class="telem-label">Throughput:</span>
+              <strong id="telemThroughput">-</strong>
+            </div>
+            <div class="telemetry-item">
+              <span class="telem-label">Passes Saved:</span>
+              <strong class="highlight-green" id="telemPassesSaved">-</strong>
+            </div>
+            <div class="telemetry-item">
+              <span class="telem-label">Peak VRAM:</span>
+              <strong id="telemVram">-</strong>
             </div>
           </div>
 
-        </div>
+        </section>
 
       </div>
     </section>
 
     <!-- ========================================================================= -->
-    <!-- TAB 2: LIVE DECODING COMPARISON LAB (Task 3 & 5) -->
+    <!-- TAB 2: LIVE DECODING COMPARISON LAB -->
     <!-- ========================================================================= -->
     <section id="tab-decoding" class="tab-panel">
       <div class="lab-container">
         
-        <div class="panel-card">
-          <div class="card-header">
-            <div>
-              <h2>Live Inference Comparison Lab</h2>
-              <p class="section-desc">Run the exact same clinical prompt simultaneously through <strong>Uncached Baseline ($\mathcal{O}(N^2)$)</strong>, <strong>KV-Cached Decoding (Task 3)</strong>, and <strong>Speculative Decoding (Task 5)</strong> live on your GPU.</p>
-            </div>
-          </div>
-
+        <!-- Controls Bar -->
+        <div class="lab-card">
           <div class="compare-input-grid">
             <div class="form-group full-width">
-              <label>Select Sample Clinical Prompt or Enter Custom:</label>
+              <div class="section-row">
+                <label class="control-label" for="comparePromptPreset">Prompt Template</label>
+                <div class="slider-inline">
+                  <span class="control-label">Tokens: <strong id="lblCompareBudget">48</strong></span>
+                  <input type="range" id="rngCompareBudget" min="16" max="96" step="16" value="48" class="form-range">
+                  <span class="control-label" style="margin-left: 1rem;">Lookahead (&gamma;): <strong id="lblCompareGamma">3</strong></span>
+                  <input type="range" id="rngCompareGamma" min="1" max="7" step="2" value="3" class="form-range">
+                </div>
+              </div>
               <select id="comparePromptPreset" class="form-select">
-                <option value="json">Clinical Trial JSON Extraction (High Syntax Predictability)</option>
-                <option value="narrative">Clinical SOAP Narrative Note (Semi-Structured Prose)</option>
-                <option value="reasoning">Open Medical Reasoning & QA (Domain Reasoning)</option>
+                <option value="json">Clinical JSON Extraction</option>
+                <option value="narrative">Clinical SOAP Narrative Note</option>
+                <option value="reasoning">Open Medical Reasoning & QA</option>
                 <option value="custom">Custom Prompt...</option>
               </select>
             </div>
             <div class="form-group full-width">
-              <textarea id="comparePromptInput" class="form-textarea" rows="4"></textarea>
-            </div>
-            <div class="form-group">
-              <label>Token Generation Budget: <span id="lblCompareBudget" class="val-pill">48</span></label>
-              <input type="range" id="rngCompareBudget" min="16" max="96" step="16" value="48" class="form-range">
-            </div>
-            <div class="form-group">
-              <label>Speculative Lookahead (&gamma;): <span id="lblCompareGamma" class="val-pill">3</span></label>
-              <input type="range" id="rngCompareGamma" min="1" max="7" step="2" value="3" class="form-range">
+              <textarea id="comparePromptInput" class="form-textarea" rows="3"></textarea>
             </div>
           </div>
 
-          <button id="btnRunCompareDecoding" class="btn-primary btn-large">
-            <span id="compareBtnSpinner" class="spinner" style="display: none;"></span>
-            Execute Live GPU Comparison
-          </button>
+          <div class="action-row">
+            <button id="btnRunCompareDecoding" class="btn-primary">
+              <span id="compareBtnSpinner" class="spinner" style="display: none;"></span>
+              <i data-lucide="zap" id="compareBtnIcon"></i>
+              <span>Run Comparison</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Token Equivalence Verification Badge -->
+        <!-- Token Equivalence Verification Banner -->
         <div id="tokenEquivalenceBanner" class="equivalence-banner" style="display: none;">
-          <div class="eq-icon">&#10004;</div>
+          <i data-lucide="check-circle" class="eq-icon"></i>
           <div>
-            <h3 id="eqTitle">100.00% Exact Greedy Token Equivalence Verified</h3>
-            <p id="eqDetails">Every token ID generated across Uncached, KV-Cached, and Speculative decoding matches identically.</p>
+            <strong id="eqTitle">100% Exact Greedy Token Equivalence</strong>
+            <span id="eqDetails" class="eq-subtext">Identical token sequence across all three decoding engines.</span>
           </div>
         </div>
 
-        <!-- Comparison Results Cards -->
+        <!-- Comparison Results Grid -->
         <div class="compare-results-grid" id="compareResultsGrid" style="display: none;">
           
           <!-- Mode 1: Uncached -->
           <div class="mode-card mode-uncached">
             <div class="mode-header">
-              <h3>Uncached Reference</h3>
-              <span class="mode-tag tag-muted">O(N&sup2;) Recomputation</span>
+              <h3>Uncached Baseline</h3>
+              <span class="mode-tag tag-muted">O(N&sup2;)</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Total Latency:</span>
+              <span class="m-label">Latency:</span>
               <span class="m-val" id="mUncTime">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Decoding Speed:</span>
+              <span class="m-label">Speed:</span>
               <span class="m-val" id="mUncTps">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Relative Speedup:</span>
-              <span class="m-val">1.00x (Baseline)</span>
+              <span class="m-label">Speedup:</span>
+              <span class="m-val">1.00x</span>
             </div>
             <div class="metric-row">
               <span class="m-label">Peak VRAM:</span>
               <span class="m-val" id="mUncVram">-</span>
             </div>
             <div class="generated-box">
-              <label>Generated Text:</label>
               <pre id="mUncText">-</pre>
             </div>
           </div>
@@ -276,19 +275,19 @@
           <!-- Mode 2: KV-Cached -->
           <div class="mode-card mode-cached">
             <div class="mode-header">
-              <h3>Explicit KV-Cached</h3>
-              <span class="mode-tag tag-blue">Task 3 Engine</span>
+              <h3>KV-Cached</h3>
+              <span class="mode-tag tag-blue">Task 3</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Total Latency:</span>
+              <span class="m-label">Latency:</span>
               <span class="m-val" id="mKvTime">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Decoding Speed:</span>
+              <span class="m-label">Speed:</span>
               <span class="m-val" id="mKvTps">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Speedup vs. Uncached:</span>
+              <span class="m-label">Speedup vs Uncached:</span>
               <span class="m-val highlight-blue" id="mKvSpeedup">-</span>
             </div>
             <div class="metric-row">
@@ -296,7 +295,6 @@
               <span class="m-val" id="mKvVram">-</span>
             </div>
             <div class="generated-box">
-              <label>Generated Text:</label>
               <pre id="mKvText">-</pre>
             </div>
           </div>
@@ -304,27 +302,27 @@
           <!-- Mode 3: Speculative -->
           <div class="mode-card mode-speculative">
             <div class="mode-header">
-              <h3>Speculative Decoding</h3>
-              <span class="mode-tag tag-green" id="mSpecTag">Task 5 (&gamma;=3)</span>
+              <h3>Speculative</h3>
+              <span class="mode-tag tag-green" id="mSpecTag">Task 5</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Total Latency:</span>
+              <span class="m-label">Latency:</span>
               <span class="m-val" id="mSpecTime">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Decoding Speed:</span>
+              <span class="m-label">Speed:</span>
               <span class="m-val" id="mSpecTps">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Speedup vs. Cached:</span>
+              <span class="m-label">Speedup vs Cached:</span>
               <span class="m-val highlight-green" id="mSpecSpeedupCached">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">Draft Acceptance (&alpha;):</span>
+              <span class="m-label">Acceptance (&alpha;):</span>
               <span class="m-val" id="mSpecAlpha">-</span>
             </div>
             <div class="metric-row">
-              <span class="m-label">3B Passes Saved:</span>
+              <span class="m-label">Passes Saved:</span>
               <span class="m-val highlight-green" id="mSpecPasses">-</span>
             </div>
             <div class="metric-row">
@@ -332,7 +330,6 @@
               <span class="m-val" id="mSpecVram">-</span>
             </div>
             <div class="generated-box">
-              <label>Generated Text:</label>
               <pre id="mSpecText">-</pre>
             </div>
           </div>
@@ -343,23 +340,16 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- TAB 3: TILED ATTENTION LAB & BENCHMARK SUITE -->
+    <!-- TAB 3: TILED ATTENTION LAB & BENCHMARKS -->
     <!-- ========================================================================= -->
     <section id="tab-attention" class="tab-panel">
       <div class="lab-container">
         
         <!-- Live Attention Kernel Runner -->
-        <div class="panel-card">
-          <div class="card-header">
-            <div>
-              <h2>Task 4: Tiled Online-Softmax Attention Lab</h2>
-              <p class="section-desc">Run our custom <strong>Reference SDPA</strong>, <strong>Tiled Online-Softmax Attention</strong>, and <strong>PyTorch Fused FlashAttention-2</strong> kernels live on arbitrary tensor dimensions.</p>
-            </div>
-          </div>
-
+        <div class="lab-card">
           <div class="attention-controls-grid">
             <div class="form-group">
-              <label>Sequence Length (N):</label>
+              <label class="control-label" for="attSeqLenSelect">Seq Length (N)</label>
               <select id="attSeqLenSelect" class="form-select">
                 <option value="128">128</option>
                 <option value="256">256</option>
@@ -369,14 +359,14 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Head Dimension (d):</label>
+              <label class="control-label" for="attHeadDimSelect">Head Dim (d)</label>
               <select id="attHeadDimSelect" class="form-select">
                 <option value="64">64</option>
                 <option value="128" selected>128 (Qwen2.5)</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Row Tile Size (B_r):</label>
+              <label class="control-label" for="attBlockRSelect">Tile B_r</label>
               <select id="attBlockRSelect" class="form-select">
                 <option value="16">16</option>
                 <option value="32" selected>32</option>
@@ -384,7 +374,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Column Tile Size (B_c):</label>
+              <label class="control-label" for="attBlockCSelect">Tile B_c</label>
               <select id="attBlockCSelect" class="form-select">
                 <option value="16">16</option>
                 <option value="32" selected>32</option>
@@ -392,72 +382,69 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Causal Masking:</label>
+              <label class="control-label" for="attCausalSelect">Causal</label>
               <select id="attCausalSelect" class="form-select">
-                <option value="true" selected>Causal (Autoregressive)</option>
-                <option value="false">Non-Causal (Bidirectional)</option>
+                <option value="true" selected>Causal</option>
+                <option value="false">Non-Causal</option>
               </select>
             </div>
           </div>
 
-          <button id="btnRunLiveAttention" class="btn-primary btn-large">
-            <span id="attBtnSpinner" class="spinner" style="display: none;"></span>
-            Execute Live Attention Kernels
-          </button>
+          <div class="action-row">
+            <button id="btnRunLiveAttention" class="btn-primary">
+              <span id="attBtnSpinner" class="spinner" style="display: none;"></span>
+              <i data-lucide="play" id="attBtnIcon"></i>
+              <span>Run Attention Kernels</span>
+            </button>
+          </div>
 
           <!-- Live Attention Output Display -->
-          <div id="attentionLiveResults" class="attention-output-grid" style="display: none; margin-top: 1.5rem;">
+          <div id="attentionLiveResults" class="attention-output-grid" style="display: none;">
             <div class="att-result-card">
-              <h4>Reference SDPA (O(N&sup2;))</h4>
+              <h4>Reference SDPA</h4>
               <p class="stat-p">Latency: <strong id="attRefTime">-</strong></p>
-              <p class="stat-p">Peak Memory: <strong id="attRefMem">-</strong></p>
+              <p class="stat-p">Memory: <strong id="attRefMem">-</strong></p>
             </div>
             <div class="att-result-card highlight-card">
               <h4>Tiled Online Softmax</h4>
               <p class="stat-p">Latency: <strong id="attTiledTime">-</strong></p>
-              <p class="stat-p">Peak Memory: <strong id="attTiledMem">-</strong></p>
+              <p class="stat-p">Memory: <strong id="attTiledMem">-</strong></p>
               <span class="badge-tag" id="attMemSavedBadge">-</span>
             </div>
             <div class="att-result-card">
               <h4>PyTorch Fused (Flash-2)</h4>
               <p class="stat-p">Latency: <strong id="attFusedTime">-</strong></p>
-              <p class="stat-p">Peak Memory: <strong id="attFusedMem">-</strong></p>
+              <p class="stat-p">Memory: <strong id="attFusedMem">-</strong></p>
             </div>
             <div class="att-result-card full-width-card">
-              <h4>Numerical Precision & Correctness</h4>
-              <p>Max Absolute Error (|O_tiled - O_ref|<sub>&infin;</sub>): <strong id="attMaxDiff" class="highlight-green">-</strong></p>
-              <p>Mean Absolute Error: <strong id="attMeanDiff">-</strong></p>
-              <p class="status-pass" id="attStatusBadge">&#10004; Numerically Verified within Tolerance</p>
+              <div class="precision-row">
+                <span>Max Error: <strong id="attMaxDiff" class="highlight-green">-</strong></span>
+                <span>Mean Error: <strong id="attMeanDiff">-</strong></span>
+                <span class="status-pass" id="attStatusBadge">&#10004; Verified</span>
+              </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Pre-computed Benchmark Dashboards -->
-        <div class="panel-card">
-          <div class="card-header">
-            <div>
-              <h2>Assignment Empirical Evaluation Dashboards</h2>
-              <p class="section-desc">Interactive visual summaries of official held-out test set metrics from Tasks 2, 3, 4, and 5.</p>
-            </div>
-          </div>
-
+        <!-- Empirical Benchmark Dashboards -->
+        <div class="lab-card">
           <div class="benchmark-tabs-nav">
-            <button class="subtab-btn active" data-subtab="sub-task2">Task 2: Classification & Evidence</button>
-            <button class="subtab-btn" data-subtab="sub-task3">Task 3: KV-Cache Scaling</button>
-            <button class="subtab-btn" data-subtab="sub-task4">Task 4: Attention Memory Wall</button>
-            <button class="subtab-btn" data-subtab="sub-task5">Task 5: Speculative Speedups</button>
+            <button class="subtab-btn active" data-subtab="sub-task2">Task 2: Classification</button>
+            <button class="subtab-btn" data-subtab="sub-task3">Task 3: KV-Cache</button>
+            <button class="subtab-btn" data-subtab="sub-task4">Task 4: Attention Scaling</button>
+            <button class="subtab-btn" data-subtab="sub-task5">Task 5: Speculative</button>
           </div>
 
           <!-- Subtab 1: Task 2 -->
           <div id="sub-task2" class="subtab-panel active">
             <div class="dashboard-grid">
               <div class="chart-box">
-                <h4>6-Class Classification Confusion Matrix (n=206)</h4>
+                <h4>Confusion Matrix (n=206)</h4>
                 <div id="task2ConfusionTableContainer"></div>
               </div>
               <div class="chart-box">
-                <h4>Inclusion vs. Exclusion Metrics</h4>
+                <h4>Inclusion vs. Exclusion</h4>
                 <canvas id="task2SplitChart"></canvas>
               </div>
             </div>
@@ -467,11 +454,11 @@
           <div id="sub-task3" class="subtab-panel">
             <div class="dashboard-grid">
               <div class="chart-box">
-                <h4>Decoding Throughput (tokens/second)</h4>
+                <h4>Throughput (tok/s)</h4>
                 <canvas id="task3ThroughputChart"></canvas>
               </div>
               <div class="chart-box">
-                <h4>Peak GPU Memory (MB) vs. Generation Length</h4>
+                <h4>Peak GPU Memory (MB)</h4>
                 <canvas id="task3MemoryChart"></canvas>
               </div>
             </div>
@@ -481,11 +468,11 @@
           <div id="sub-task4" class="subtab-panel">
             <div class="dashboard-grid">
               <div class="chart-box">
-                <h4>Peak Attention Memory (MB) across Sequence Length</h4>
+                <h4>Peak Attention Memory (MB)</h4>
                 <canvas id="task4MemoryChart"></canvas>
               </div>
               <div class="chart-box">
-                <h4>Attention Execution Latency (ms)</h4>
+                <h4>Attention Latency (ms)</h4>
                 <canvas id="task4LatencyChart"></canvas>
               </div>
             </div>
@@ -495,11 +482,11 @@
           <div id="sub-task5" class="subtab-panel">
             <div class="dashboard-grid">
               <div class="chart-box">
-                <h4>Speculative Speedup Factor vs. Lookahead (&gamma;)</h4>
+                <h4>Speedup vs. Lookahead (&gamma;)</h4>
                 <canvas id="task5SpeedupChart"></canvas>
               </div>
               <div class="chart-box">
-                <h4>Draft Acceptance Rate (&alpha;) & Target Passes Saved</h4>
+                <h4>Acceptance Rate (&alpha;)</h4>
                 <canvas id="task5AlphaChart"></canvas>
               </div>
             </div>
@@ -512,7 +499,10 @@
 
   </main>
 
+  <footer class="app-footer">
+    <span>TrialMatch AI &bull; Clinical Screening & Inference Benchmarks &bull; Research Prototype</span>
+  </footer>
+
   <script src="/static/app.js"></script>
 </body>
 </html>
-

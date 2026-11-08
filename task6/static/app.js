@@ -1,15 +1,6 @@
 /**
- * TrialMatch AI — Web Frontend Logic (app.js)
- * Implements:
- * - Dynamic tab switching
- * - Hardware diagnostics polling
- * - Preset clinical cases loading
- * - Patient note sentence parsing & interactive evidence highlighting
- * - Dynamic criteria builder
- * - Asynchronous screening with rule-based verdict visualization
- * - HTML/PDF and JSON screening report export
- * - Tab 2 Live decoding comparison runner
- * - Tab 3 Live tiled attention runner & interactive Chart.js benchmark visualizations
+ * TrialMatch — Clinical Screening & Inference Benchmarks Client Logic
+ * Clean, utilitarian, responsive frontend logic with Lucide icons.
  */
 
 // Global State
@@ -34,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initDecodingLabEvents();
   initAttentionLabEvents();
   initBenchmarkDashboards();
+  if (window.lucide) lucide.createIcons();
 });
 
 /* ==========================================================================
@@ -46,7 +38,9 @@ function initNavigation() {
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
       const targetId = btn.dataset.tab;
-      document.getElementById(targetId).classList.add("active");
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) targetPanel.classList.add("active");
+      if (window.lucide) lucide.createIcons();
     });
   });
 
@@ -56,7 +50,8 @@ function initNavigation() {
       document.querySelectorAll(".subtab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
       const targetId = btn.dataset.subtab;
-      document.getElementById(targetId).classList.add("active");
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) targetPanel.classList.add("active");
     });
   });
 }
@@ -65,18 +60,18 @@ function initNavigation() {
    Hardware Diagnostics
    ========================================================================== */
 async function initHardwareStatus() {
+  const textEl = document.getElementById("hardwareText");
   try {
     const res = await fetch("/api/status");
     if (!res.ok) throw new Error("HTTP error " + res.status);
     const data = await res.json();
-    const textEl = document.getElementById("hardwareText");
     if (data.cuda_available) {
-      textEl.textContent = `${data.gpu_name} | VRAM: ${data.vram_allocated_mb} MB / ${data.vram_total_mb} MB (${data.vram_usage_percent}%)`;
+      textEl.textContent = `${data.gpu_name} (${data.vram_allocated_mb} MB / ${data.vram_total_mb} MB)`;
     } else {
       textEl.textContent = "CPU Mode | CUDA Unavailable";
     }
   } catch (e) {
-    document.getElementById("hardwareText").textContent = "Backend Offline";
+    textEl.textContent = "Offline";
   }
 }
 
@@ -90,7 +85,7 @@ async function initPresets() {
     const data = await res.json();
     currentPresets = data.presets || [];
     const select = document.getElementById("presetCaseSelect");
-    select.innerHTML = '<option value="">-- Choose a Clinical Case (Held-Out Test or Unseen) --</option>';
+    select.innerHTML = '<option value="">Select a test or unseen clinical case...</option>';
 
     currentPresets.forEach((p, idx) => {
       const opt = document.createElement("option");
@@ -136,6 +131,7 @@ function loadPresetByIndex(idx) {
   } else {
     addCriterionRow("CRIT_1", "inclusion", "");
   }
+  if (window.lucide) lucide.createIcons();
 }
 
 /* ==========================================================================
@@ -143,7 +139,7 @@ function loadPresetByIndex(idx) {
    ========================================================================== */
 function initCriteriaBuilder() {
   document.getElementById("btnAddCriterion").addEventListener("click", () => {
-    const nextIdx = document.querySelectorAll(".criterion-item-builder").length + 1;
+    const nextIdx = document.querySelectorAll(".criterion-card").length + 1;
     addCriterionRow(`CRIT_${nextIdx}`, "inclusion", "");
   });
 
@@ -166,32 +162,30 @@ function initCriteriaBuilder() {
 function addCriterionRow(id, type, text, goldElig = "", goldSent = "") {
   const container = document.getElementById("criteriaListContainer");
   const div = document.createElement("div");
-  div.className = "criterion-item-builder";
+  div.className = "criterion-card";
   div.dataset.goldElig = goldElig;
   div.dataset.goldSent = goldSent;
 
   div.innerHTML = `
-    <div class="builder-top">
-      <input type="text" class="form-input crit-id-input" value="${id}" style="width: 130px; font-size: 0.75rem;" placeholder="ID">
-      <select class="type-select ${type}">
+    <div class="crit-header-row">
+      <input type="text" class="form-select crit-id-input" value="${id}" placeholder="ID">
+      <select class="form-select crit-type-select">
         <option value="inclusion" ${type === "inclusion" ? "selected" : ""}>Inclusion</option>
         <option value="exclusion" ${type === "exclusion" ? "selected" : ""}>Exclusion</option>
       </select>
-      <button class="btn-remove-crit" title="Remove">&times;</button>
+      <button class="btn-delete-crit" title="Remove">
+        <i data-lucide="trash-2"></i>
+      </button>
     </div>
-    <textarea class="form-textarea crit-text-input" rows="2" placeholder="Criterion statement (e.g. ECOG performance status 0 or 1)">${text}</textarea>
+    <input type="text" class="form-textarea crit-text-input" value="${text}" placeholder="Criterion statement...">
   `;
 
-  const typeSelect = div.querySelector(".type-select");
-  typeSelect.addEventListener("change", () => {
-    typeSelect.className = `type-select ${typeSelect.value}`;
-  });
-
-  div.querySelector(".btn-remove-crit").addEventListener("click", () => {
+  div.querySelector(".btn-delete-crit").addEventListener("click", () => {
     div.remove();
   });
 
   container.appendChild(div);
+  if (window.lucide) lucide.createIcons();
 }
 
 function updateSentenceViewer() {
@@ -204,7 +198,6 @@ function updateSentenceViewer() {
     return;
   }
 
-  // Parse lines or split sentences
   const lines = note.split("\n");
   let sentences = [];
   if (lines.length > 1 && /^\d+\.\s+/.test(lines[0])) {
@@ -218,9 +211,9 @@ function updateSentenceViewer() {
 
   sentences.forEach((s, idx) => {
     const row = document.createElement("div");
-    row.className = "sentence-row";
+    row.className = "sentence-item";
     row.id = `sentence-row-${idx}`;
-    row.innerHTML = `<span class="s-idx">[${idx}]</span> ${s}`;
+    row.innerHTML = `<strong>[${idx}]</strong> ${s}`;
     viewer.appendChild(row);
   });
 }
@@ -235,7 +228,7 @@ function initScreenerEvents() {
   const gammaLabel = document.getElementById("gammaValueLabel");
 
   modeSelect.addEventListener("change", () => {
-    gammaGroup.style.display = modeSelect.value === "speculative" ? "block" : "none";
+    gammaGroup.style.display = modeSelect.value === "speculative" ? "flex" : "none";
   });
 
   gammaRange.addEventListener("input", () => {
@@ -265,16 +258,16 @@ async function runScreening() {
     return;
   }
 
-  const critItems = document.querySelectorAll(".criterion-item-builder");
-  if (critItems.length === 0) {
+  const critCards = document.querySelectorAll(".criterion-card");
+  if (critCards.length === 0) {
     alert("Please add at least one eligibility criterion.");
     return;
   }
 
   const criteria = [];
-  critItems.forEach((div) => {
+  critCards.forEach((div) => {
     const id = div.querySelector(".crit-id-input").value.trim() || "CRIT";
-    const type = div.querySelector(".type-select").value;
+    const type = div.querySelector(".crit-type-select").value;
     const text = div.querySelector(".crit-text-input").value.trim();
     const goldElig = div.dataset.goldElig || "";
     const goldSent = div.dataset.goldSent || "";
@@ -300,8 +293,10 @@ async function runScreening() {
   // UI Loading State
   const btn = document.getElementById("btnRunScreening");
   const spinner = document.getElementById("screenBtnSpinner");
+  const btnIcon = document.getElementById("screenBtnIcon");
   btn.disabled = true;
   spinner.style.display = "inline-block";
+  if (btnIcon) btnIcon.style.display = "none";
 
   try {
     const res = await fetch("/api/screen", {
@@ -323,12 +318,14 @@ async function runScreening() {
     const data = await res.json();
     currentScreeningResult = data;
     renderScreeningResults(data);
-    initHardwareStatus(); // Refresh VRAM usage
+    initHardwareStatus();
   } catch (e) {
     alert(`Screening Error: ${e.message}`);
   } finally {
     btn.disabled = false;
     spinner.style.display = "none";
+    if (btnIcon) btnIcon.style.display = "inline-block";
+    if (window.lucide) lucide.createIcons();
   }
 }
 
@@ -336,7 +333,16 @@ function renderScreeningResults(data) {
   const verdict = data.overall_verdict;
   const vCard = document.getElementById("overallVerdictCard");
   vCard.className = `verdict-banner ${verdict.status_color}`;
-  vCard.style.display = "block";
+  vCard.style.display = "flex";
+
+  const iconEl = document.getElementById("verdictIcon");
+  if (verdict.status_color === "danger") {
+    iconEl.innerHTML = '<i data-lucide="x-circle"></i>';
+  } else if (verdict.status_color === "warning") {
+    iconEl.innerHTML = '<i data-lucide="alert-triangle"></i>';
+  } else {
+    iconEl.innerHTML = '<i data-lucide="check-circle-2"></i>';
+  }
 
   document.getElementById("verdictTitle").textContent = verdict.verdict_title;
   document.getElementById("verdictSummary").textContent = verdict.summary;
@@ -344,12 +350,12 @@ function renderScreeningResults(data) {
 
   const vStats = document.getElementById("verdictStats");
   vStats.innerHTML = `
-    <span class="v-stat-pill">&#9989; Included: <strong>${verdict.counts.included}</strong></span>
-    <span class="v-stat-pill">&#10006; Not Included: <strong>${verdict.counts.not_included}</strong></span>
-    <span class="v-stat-pill">&#9989; Not Excluded: <strong>${verdict.counts.not_excluded}</strong></span>
-    <span class="v-stat-pill">&#10006; Excluded: <strong>${verdict.counts.excluded}</strong></span>
-    <span class="v-stat-pill">&#9888; Missing Info: <strong>${verdict.counts.not_enough_info}</strong></span>
-    <span class="v-stat-pill">&#9866; Not Applicable: <strong>${verdict.counts.not_applicable}</strong></span>
+    <span class="stat-pill ${verdict.counts.included > 0 ? "pill-success" : ""}">Included: <strong>${verdict.counts.included}</strong></span>
+    <span class="stat-pill ${verdict.counts.not_included > 0 ? "pill-danger" : ""}">Not Included: <strong>${verdict.counts.not_included}</strong></span>
+    <span class="stat-pill ${verdict.counts.not_excluded > 0 ? "pill-success" : ""}">Not Excluded: <strong>${verdict.counts.not_excluded}</strong></span>
+    <span class="stat-pill ${verdict.counts.excluded > 0 ? "pill-danger" : ""}">Excluded: <strong>${verdict.counts.excluded}</strong></span>
+    <span class="stat-pill ${verdict.counts.not_enough_info > 0 ? "pill-warning" : ""}">Missing Info: <strong>${verdict.counts.not_enough_info}</strong></span>
+    <span class="stat-pill">N/A: <strong>${verdict.counts.not_applicable}</strong></span>
   `;
 
   // Toolbar counts
@@ -365,88 +371,82 @@ function renderScreeningResults(data) {
 
   data.criteria_results.forEach((c) => {
     const card = document.createElement("div");
-    card.className = "decision-card";
+    card.className = "result-row-card decision-card";
     card.dataset.type = c.criterion_type;
     card.dataset.prediction = c.prediction;
 
     const predClassMap = {
-      included: "included",
-      "not included": "not-included",
-      "not excluded": "not-excluded",
-      excluded: "excluded",
-      "not enough information": "not-enough-info",
-      "not applicable": "not-applicable",
+      included: "pred-included",
+      "not included": "pred-not-included",
+      "not excluded": "pred-not-excluded",
+      excluded: "pred-excluded",
+      "not enough information": "pred-not-enough-information",
+      "not applicable": "pred-not-applicable",
     };
-    const pClass = predClassMap[c.prediction] || "not-enough-info";
+    const pClass = predClassMap[c.prediction] || "pred-not-enough-information";
 
-    // Evidence sentences pills
-    let evidencePillsHtml = "";
+    let evidenceTagsHtml = "";
     if (c.evidence_sentence_ids && c.evidence_sentence_ids.length > 0) {
       c.evidence_sentence_ids.forEach((sid) => {
-        evidencePillsHtml += `<span class="sentence-click-pill" onclick="highlightSentence(${sid})">Sentence [${sid}]</span>`;
+        evidenceTagsHtml += `<span class="ev-tag" onclick="highlightSentence(${sid})">Sentence [${sid}]</span>`;
       });
     } else {
-      evidencePillsHtml = '<span style="color: var(--text-dim); font-size: 0.75rem;">None Cited (Implicit or Missing)</span>';
+      evidenceTagsHtml = '<span style="color: var(--text-muted); font-size: 11px;">None Cited</span>';
     }
 
     let evidenceQuotesHtml = "";
     if (c.evidence_text && c.evidence_text.length > 0) {
-      evidenceQuotesHtml = `<div class="evidence-quote">"${c.evidence_text.join('" "')}"</div>`;
-    }
-
-    let goldHtml = "";
-    if (c.gold_eligibility) {
-      goldHtml = `<span class="gold-comparison">Gold Ground Truth: <strong>${c.gold_eligibility}</strong></span>`;
+      evidenceQuotesHtml = `<div style="font-style: italic; color: var(--text-secondary); margin-top: 2px;">"${c.evidence_text.join('" "')}"</div>`;
     }
 
     card.innerHTML = `
-      <div class="decision-top">
-        <div class="crit-badge-group">
-          <span class="crit-id-badge">${c.criterion_id}</span>
-          <span class="crit-type-badge ${c.criterion_type}">${c.criterion_type}</span>
+      <div class="result-row-header">
+        <div class="result-title-group">
+          <span class="badge-id">${c.criterion_id}</span>
+          <span class="badge-type ${c.criterion_type === "inclusion" ? "inc" : "exc"}">${c.criterion_type}</span>
         </div>
-        <span class="pred-badge ${pClass}">${c.prediction}</span>
+        <span class="badge-pred ${pClass}">${c.prediction}</span>
       </div>
-      <div class="crit-body-text">${c.criterion_text}</div>
-      <div class="evidence-block">
-        <div class="evidence-header">
-          <span>Patient Record Evidence:</span>
-          <div>${evidencePillsHtml}</div>
+      <div class="criterion-text-display">${c.criterion_text}</div>
+      <div class="evidence-box">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <strong>Evidence:</strong>
+          <div class="evidence-tags">${evidenceTagsHtml}</div>
         </div>
         ${evidenceQuotesHtml}
       </div>
-      <div class="explanation-text"><strong>Justification:</strong> ${c.explanation}</div>
-      <div class="crit-footer">
-        <div>${goldHtml}</div>
-        <div>Latency: ${c.latency_ms} ms (${c.tokens_per_sec} tok/s)</div>
+      <div style="font-size: 11px; color: var(--text-secondary);"><strong>Justification:</strong> ${c.explanation}</div>
+      <div class="result-footer-row">
+        <span>${c.gold_eligibility ? `Gold: <strong>${c.gold_eligibility}</strong>` : ""}</span>
+        <span>${c.latency_ms} ms (${c.tokens_per_sec} tok/s)</span>
       </div>
     `;
 
     container.appendChild(card);
   });
 
-  // Telemetry
+  // Telemetry Bar
   const telem = data.telemetry;
-  document.getElementById("screeningTelemetryCard").style.display = "block";
+  document.getElementById("screeningTelemetryCard").style.display = "flex";
   document.getElementById("telemetryModeBadge").textContent = data.decoding_mode.toUpperCase();
   document.getElementById("telemTime").textContent = `${telem.total_time_ms} ms`;
   document.getElementById("telemTokens").textContent = telem.total_tokens_generated;
   document.getElementById("telemThroughput").textContent = `${telem.overall_tokens_per_sec} tok/s`;
   document.getElementById("telemPassesSaved").textContent = telem.total_target_passes_saved;
   document.getElementById("telemVram").textContent = `${telem.peak_vram_mb} MB`;
+
+  if (window.lucide) lucide.createIcons();
 }
 
 function highlightSentence(idx) {
-  // Ensure viewer is open
   const viewer = document.getElementById("sentenceBreakdownViewer");
   viewer.style.display = "flex";
 
-  // Clear previous highlights
-  document.querySelectorAll(".sentence-row").forEach((r) => r.classList.remove("highlight-evidence"));
+  document.querySelectorAll(".sentence-item").forEach((r) => r.classList.remove("sentence-highlighted"));
 
   const target = document.getElementById(`sentence-row-${idx}`);
   if (target) {
-    target.classList.add("highlight-evidence");
+    target.classList.add("sentence-highlighted");
     target.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 }
@@ -454,13 +454,13 @@ function highlightSentence(idx) {
 function filterResults(filter) {
   document.querySelectorAll(".decision-card").forEach((card) => {
     if (filter === "all") {
-      card.style.display = "block";
+      card.style.display = "flex";
     } else if (filter === "inclusion") {
-      card.style.display = card.dataset.type === "inclusion" ? "block" : "none";
+      card.style.display = card.dataset.type === "inclusion" ? "flex" : "none";
     } else if (filter === "exclusion") {
-      card.style.display = card.dataset.type === "exclusion" ? "block" : "none";
+      card.style.display = card.dataset.type === "exclusion" ? "flex" : "none";
     } else if (filter === "missing") {
-      card.style.display = card.dataset.prediction === "not enough information" ? "block" : "none";
+      card.style.display = card.dataset.prediction === "not enough information" ? "flex" : "none";
     }
   });
 }
@@ -505,7 +505,6 @@ function exportHtmlReport() {
       <title>Clinical Trial Eligibility Screening Assessment</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem; color: #24292f; }
-        .banner { background-color: #fff8c5; border: 1px solid rgba(210,153,34,0.4); padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.85rem; }
         .header { border-bottom: 2px solid #0969da; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
         .verdict-box { padding: 1rem; border-radius: 6px; background-color: #f6f8fa; border: 1px solid #d0d7de; margin-bottom: 1.5rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
@@ -516,19 +515,16 @@ function exportHtmlReport() {
       </style>
     </head>
     <body>
-      <div class="banner">
-        <strong>EDUCATIONAL RESEARCH PROTOTYPE ONLY:</strong> Generated by Generative AI Coursework System. Not for official clinical trial enrollment or medical decisions.
-      </div>
       <div class="header">
         <h2>Clinical Trial Eligibility Screening Report</h2>
-        <p>Target Model: Qwen/Qwen2.5-3B-Instruct (4-bit NF4 + LoRA) | Decoding: ${res.decoding_mode.toUpperCase()}</p>
+        <p>Target Model: Qwen/Qwen2.5-3B-Instruct (4-bit NF4 + LoRA) | Mode: ${res.decoding_mode.toUpperCase()}</p>
         <p>Timestamp: ${new Date().toISOString()}</p>
       </div>
 
       <div class="verdict-box">
-        <h3>Preliminary Verdict: ${verdict.verdict_title}</h3>
+        <h3>Verdict: ${verdict.verdict_title}</h3>
         <p>${verdict.summary}</p>
-        <p><small>Rule Trace: ${verdict.rule_applied}</small></p>
+        <p><small>Rule: ${verdict.rule_applied}</small></p>
       </div>
 
       <h3>Patient Record (Normalized & Indexed)</h3>
@@ -552,7 +548,7 @@ function exportHtmlReport() {
       </table>
 
       <br><hr>
-      <button onclick="window.print()" style="padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer;">Print / Save as PDF</button>
+      <button onclick="window.print()" style="padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; margin-top: 1rem;">Print / Save as PDF</button>
     </body>
     </html>
   `;
@@ -605,8 +601,10 @@ async function runCompareDecoding() {
 
   const btn = document.getElementById("btnRunCompareDecoding");
   const spinner = document.getElementById("compareBtnSpinner");
+  const btnIcon = document.getElementById("compareBtnIcon");
   btn.disabled = true;
   spinner.style.display = "inline-block";
+  if (btnIcon) btnIcon.style.display = "none";
 
   try {
     const res = await fetch("/api/compare_decoding", {
@@ -628,10 +626,12 @@ async function runCompareDecoding() {
     renderCompareResults(data);
     initHardwareStatus();
   } catch (e) {
-    alert(`Comparison Execution Error: ${e.message}`);
+    alert(`Comparison Error: ${e.message}`);
   } finally {
     btn.disabled = false;
     spinner.style.display = "none";
+    if (btnIcon) btnIcon.style.display = "inline-block";
+    if (window.lucide) lucide.createIcons();
   }
 }
 
@@ -642,10 +642,10 @@ function renderCompareResults(data) {
 
   if (eq.all_modes_exact_match) {
     document.getElementById("eqTitle").textContent = "100.00% Exact Greedy Token Equivalence Verified";
-    document.getElementById("eqDetails").textContent = `All 3 modes (Uncached, KV-Cached, and Speculative \u03b3=${data.gamma}) produced identical ${eq.num_tokens_cached} tokens. Zero drift or hallucination.`;
+    document.getElementById("eqDetails").textContent = `All 3 modes (Uncached, KV-Cached, and Speculative \u03b3=${data.gamma}) produced identical ${eq.num_tokens_cached} tokens.`;
   } else {
     document.getElementById("eqTitle").textContent = "Token Discrepancy Detected";
-    document.getElementById("eqDetails").textContent = "Check generation outputs for non-deterministic variances.";
+    document.getElementById("eqDetails").textContent = "Variances detected between output token sequences.";
   }
 
   document.getElementById("compareResultsGrid").style.display = "grid";
@@ -674,6 +674,8 @@ function renderCompareResults(data) {
   document.getElementById("mSpecPasses").textContent = s.target_passes_saved;
   document.getElementById("mSpecVram").textContent = `${s.peak_vram_mb} MB`;
   document.getElementById("mSpecText").textContent = s.text;
+
+  if (window.lucide) lucide.createIcons();
 }
 
 /* ==========================================================================
@@ -692,8 +694,10 @@ async function runLiveAttention() {
 
   const btn = document.getElementById("btnRunLiveAttention");
   const spinner = document.getElementById("attBtnSpinner");
+  const btnIcon = document.getElementById("attBtnIcon");
   btn.disabled = true;
   spinner.style.display = "inline-block";
+  if (btnIcon) btnIcon.style.display = "none";
 
   try {
     const res = await fetch("/api/run_attention", {
@@ -717,10 +721,12 @@ async function runLiveAttention() {
     renderLiveAttentionResults(data);
     initHardwareStatus();
   } catch (e) {
-    alert(`Attention Kernel Error: ${e.message}`);
+    alert(`Attention Error: ${e.message}`);
   } finally {
     btn.disabled = false;
     spinner.style.display = "none";
+    if (btnIcon) btnIcon.style.display = "inline-block";
+    if (window.lucide) lucide.createIcons();
   }
 }
 
@@ -734,7 +740,7 @@ function renderLiveAttentionResults(data) {
 
   document.getElementById("attTiledTime").textContent = `${r.tiled_online_sdpa.latency_ms} ms`;
   document.getElementById("attTiledMem").textContent = `${r.tiled_online_sdpa.peak_vram_mb} MB`;
-  document.getElementById("attMemSavedBadge").textContent = `${r.memory_reduction_percent}% Memory Saved`;
+  document.getElementById("attMemSavedBadge").textContent = `${r.memory_reduction_percent}% Saved`;
 
   document.getElementById("attFusedTime").textContent = `${r.pytorch_fused_sdpa.latency_ms} ms`;
   document.getElementById("attFusedMem").textContent = `${r.pytorch_fused_sdpa.peak_vram_mb} MB`;
@@ -742,6 +748,8 @@ function renderLiveAttentionResults(data) {
   const num = data.numerical_agreement;
   document.getElementById("attMaxDiff").textContent = num.max_absolute_error.toExponential(3);
   document.getElementById("attMeanDiff").textContent = num.mean_absolute_error.toExponential(3);
+
+  if (window.lucide) lucide.createIcons();
 }
 
 /* ==========================================================================
@@ -763,7 +771,6 @@ async function initBenchmarkDashboards() {
 
 function renderTask2Dashboard(t2) {
   if (!t2) return;
-  // Confusion Matrix Table
   const cm = t2.confusion_matrix;
   let tableHtml = '<table class="matrix-table"><thead><tr><th>Gold \\ Pred</th>';
   const shortLabels = ["incl", "not-inc", "not-exc", "excl", "missing", "n/a"];
@@ -773,7 +780,7 @@ function renderTask2Dashboard(t2) {
   cm.matrix.forEach((row, rIdx) => {
     tableHtml += `<tr><th>${shortLabels[rIdx]}</th>`;
     row.forEach((val, cIdx) => {
-      const cls = rIdx === cIdx && val > 0 ? "diag-cell" : val > 0 ? "error-cell" : "";
+      const cls = rIdx === cIdx && val > 0 ? "matrix-cell-match" : "";
       tableHtml += `<td class="${cls}">${val}</td>`;
     });
     tableHtml += "</tr>";
@@ -781,18 +788,25 @@ function renderTask2Dashboard(t2) {
   tableHtml += "</tbody></table>";
   document.getElementById("task2ConfusionTableContainer").innerHTML = tableHtml;
 
-  // Split Chart (Inclusion vs Exclusion)
   const ctx = document.getElementById("task2SplitChart").getContext("2d");
   charts.task2 = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: ["Accuracy", "Macro F1", "Evidence F1 (Macro)", "Evidence F1 (Micro)"],
+      labels: ["Accuracy", "Macro F1", "Evidence Macro", "Evidence Micro"],
       datasets: [
-        { label: "Inclusion Criteria (n=75)", data: [73.3, 39.3, 69.7, 61.9], backgroundColor: "#3fb950" },
-        { label: "Exclusion Criteria (n=131)", data: [73.3, 49.8, 90.0, 49.2], backgroundColor: "#58a6ff" },
+        { label: "Inclusion (n=75)", data: [73.3, 39.3, 69.7, 61.9], backgroundColor: "#238636" },
+        { label: "Exclusion (n=131)", data: [73.3, 49.8, 90.0, 49.2], backgroundColor: "#1f6feb" },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e", font: { size: 10 } }, grid: { display: false } },
+      },
+    },
   });
 }
 
@@ -802,13 +816,21 @@ function renderTask3Dashboard(t3) {
   charts.task3Tps = new Chart(ctx1, {
     type: "bar",
     data: {
-      labels: ["Short (N=32)", "Short (N=128)", "Medium (N=32)", "Medium (N=128)", "Long (N=32)", "Long (N=128)"],
+      labels: ["Short (32)", "Short (128)", "Med (32)", "Med (128)", "Long (32)", "Long (128)"],
       datasets: [
-        { label: "Uncached Baseline (tok/s)", data: [6.8, 5.8, 5.3, 4.5, 4.1, 2.9], backgroundColor: "#8b949e" },
-        { label: "Explicit KV-Cached (tok/s)", data: [6.7, 6.8, 7.2, 7.5, 7.3, 7.4], backgroundColor: "#388bfd" },
+        { label: "Uncached (tok/s)", data: [6.8, 5.8, 5.3, 4.5, 4.1, 2.9], backgroundColor: "#6e7681" },
+        { label: "KV-Cached (tok/s)", data: [6.7, 6.8, 7.2, 7.5, 7.3, 7.4], backgroundColor: "#1f6feb" },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e", font: { size: 10 } }, grid: { display: false } },
+      },
+    },
   });
 
   const ctx2 = document.getElementById("task3MemoryChart").getContext("2d");
@@ -817,11 +839,19 @@ function renderTask3Dashboard(t3) {
     data: {
       labels: ["32 tokens", "64 tokens", "128 tokens"],
       datasets: [
-        { label: "Dedicated KV Cache (MB)", data: [3.0, 4.1, 6.4], borderColor: "#3fb950", tension: 0.2 },
-        { label: "Memory Saved vs Uncached (MB)", data: [25.8, 53.3, 108.9], borderColor: "#58a6ff", tension: 0.2 },
+        { label: "Dedicated KV Cache (MB)", data: [3.0, 4.1, 6.4], borderColor: "#238636", tension: 0.2 },
+        { label: "Memory Saved vs Uncached (MB)", data: [25.8, 53.3, 108.9], borderColor: "#388bfd", tension: 0.2 },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e" }, grid: { display: false } },
+      },
+    },
   });
 }
 
@@ -833,12 +863,20 @@ function renderTask4Dashboard(t4) {
     data: {
       labels: ["128", "256", "512", "1024", "2048", "4096"],
       datasets: [
-        { label: "Reference SDPA Peak MB (O(N^2))", data: [9.9, 13.2, 24.4, 65.2, 220.2, 824.3], borderColor: "#f85149", tension: 0.2 },
-        { label: "Tiled Online Softmax Peak MB (O(N))", data: [9.9, 10.9, 12.9, 16.9, 24.9, 41.0], borderColor: "#3fb950", tension: 0.2 },
-        { label: "PyTorch Fused Peak MB", data: [9.1, 10.1, 12.1, 16.1, 24.1, 40.1], borderColor: "#58a6ff", tension: 0.2 },
+        { label: "Reference SDPA Peak MB", data: [9.9, 13.2, 24.4, 65.2, 220.2, 824.3], borderColor: "#da3633", tension: 0.2 },
+        { label: "Tiled Online Softmax Peak MB", data: [9.9, 10.9, 12.9, 16.9, 24.9, 41.0], borderColor: "#238636", tension: 0.2 },
+        { label: "PyTorch Fused Peak MB", data: [9.1, 10.1, 12.1, 16.1, 24.1, 40.1], borderColor: "#1f6feb", tension: 0.2 },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e" }, grid: { display: false } },
+      },
+    },
   });
 
   const ctx2 = document.getElementById("task4LatencyChart").getContext("2d");
@@ -847,11 +885,19 @@ function renderTask4Dashboard(t4) {
     data: {
       labels: ["128", "256", "512", "1024", "2048", "4096"],
       datasets: [
-        { label: "Reference SDPA (ms)", data: [0.59, 0.34, 0.41, 1.58, 6.96, 26.69], backgroundColor: "#f85149" },
-        { label: "PyTorch Fused Flash-2 (ms)", data: [0.09, 0.12, 0.21, 0.32, 1.01, 3.63], backgroundColor: "#3fb950" },
+        { label: "Reference SDPA (ms)", data: [0.59, 0.34, 0.41, 1.58, 6.96, 26.69], backgroundColor: "#da3633" },
+        { label: "PyTorch Fused Flash-2 (ms)", data: [0.09, 0.12, 0.21, 0.32, 1.01, 3.63], backgroundColor: "#238636" },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e" }, grid: { display: false } },
+      },
+    },
   });
 }
 
@@ -861,22 +907,24 @@ function renderTask5Dashboard(t5) {
   charts.task5Speedup = new Chart(ctx1, {
     type: "line",
     data: {
-      labels: ["gamma=1", "gamma=3", "gamma=5", "gamma=7"],
+      labels: ["\u03b3=1", "\u03b3=3", "\u03b3=5", "\u03b3=7"],
       datasets: [
-        { label: "Structured JSON Speedup", data: [1.07, 1.56, 1.75, 1.46], borderColor: "#3fb950", tension: 0.2 },
-        { label: "Medical QA Speedup", data: [1.06, 1.43, 1.34, 1.10], borderColor: "#58a6ff", tension: 0.2 },
-        { label: "Clinical Narrative Speedup", data: [0.92, 1.28, 1.24, 1.15], borderColor: "#d29922", tension: 0.2 },
+        { label: "Structured JSON", data: [1.07, 1.56, 1.75, 1.46], borderColor: "#238636", tension: 0.2 },
+        { label: "Medical QA", data: [1.06, 1.43, 1.34, 1.10], borderColor: "#1f6feb", tension: 0.2 },
+        { label: "Clinical Narrative", data: [0.92, 1.28, 1.24, 1.15], borderColor: "#d29922", tension: 0.2 },
       ],
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
       scales: {
         y: {
           min: 0.8,
-          ticks: {
-            callback: (v) => `${v}x`,
-          },
+          ticks: { color: "#8b949e", callback: (v) => `${v}x` },
+          grid: { color: "#21262d" },
         },
+        x: { ticks: { color: "#8b949e" }, grid: { display: false } },
       },
     },
   });
@@ -885,13 +933,20 @@ function renderTask5Dashboard(t5) {
   charts.task5Alpha = new Chart(ctx2, {
     type: "bar",
     data: {
-      labels: ["gamma=1", "gamma=3", "gamma=5", "gamma=7"],
+      labels: ["\u03b3=1", "\u03b3=3", "\u03b3=5", "\u03b3=7"],
       datasets: [
-        { label: "Structured JSON Acceptance (alpha %)", data: [88.9, 70.0, 62.9, 50.6], backgroundColor: "#3fb950" },
-        { label: "Clinical Narrative Acceptance (alpha %)", data: [73.0, 58.0, 44.3, 42.2], backgroundColor: "#d29922" },
+        { label: "Structured JSON (\u03b1 %)", data: [88.9, 70.0, 62.9, 50.6], backgroundColor: "#238636" },
+        { label: "Clinical Narrative (\u03b1 %)", data: [73.0, 58.0, 44.3, 42.2], backgroundColor: "#d29922" },
       ],
     },
-    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: "#8b949e", font: { size: 10 } } } },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { color: "#8b949e" }, grid: { color: "#21262d" } },
+        x: { ticks: { color: "#8b949e" }, grid: { display: false } },
+      },
+    },
   });
 }
-
