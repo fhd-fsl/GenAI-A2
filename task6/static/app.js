@@ -32,26 +32,50 @@ document.addEventListener("DOMContentLoaded", () => {
    Navigation
    ========================================================================== */
 function initNavigation() {
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
+  const tabs = document.querySelectorAll(".nav-tab, .tab-btn");
+  tabs.forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      tabs.forEach((b) => b.classList.remove("active"));
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
       const targetId = btn.dataset.tab;
       const targetPanel = document.getElementById(targetId);
-      if (targetPanel) targetPanel.classList.add("active");
+      if (targetPanel) {
+        targetPanel.classList.add("active");
+      }
       if (window.lucide) lucide.createIcons();
+
+      // Ensure Chart.js responsive dimensions recalculate when Tab 3 is viewed
+      if (targetId === "tab-attention") {
+        setTimeout(() => {
+          Object.values(charts).forEach((c) => {
+            if (c && typeof c.resize === "function") {
+              c.resize();
+            }
+          });
+        }, 50);
+      }
     });
   });
 
-  document.querySelectorAll(".subtab-btn").forEach((btn) => {
+  const subtabs = document.querySelectorAll(".dash-tab, .subtab-btn");
+  subtabs.forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".subtab-btn").forEach((b) => b.classList.remove("active"));
+      subtabs.forEach((b) => b.classList.remove("active"));
       document.querySelectorAll(".subtab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
       const targetId = btn.dataset.subtab;
       const targetPanel = document.getElementById(targetId);
-      if (targetPanel) targetPanel.classList.add("active");
+      if (targetPanel) {
+        targetPanel.classList.add("active");
+      }
+      setTimeout(() => {
+        Object.values(charts).forEach((c) => {
+          if (c && typeof c.resize === "function") {
+            c.resize();
+          }
+        });
+      }, 50);
     });
   });
 }
