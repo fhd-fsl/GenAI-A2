@@ -63,9 +63,17 @@ Thumbs.db
 
 # PDFs / large assets
 *.pdf
+!report/GenAI_Assignment2_Report.pdf
 *.mp4
 *.mov
 *.avi
+
+# LaTeX intermediate build artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.synctex.gz
 
 # Jupyter
 .ipynb_checkpoints/
