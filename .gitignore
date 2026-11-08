@@ -64,6 +64,7 @@ Thumbs.db
 # PDFs / large assets
 *.pdf
 !report/GenAI_Assignment2_Report.pdf
+!report/figures/*.pdf
 *.mp4
 *.mov
 *.avi
